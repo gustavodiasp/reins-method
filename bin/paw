@@ -300,7 +300,7 @@ EOF
 # ---------------------------------------------------------------------------
 
 cmd_install() {
-  log "Welcome to PAW Method — Pair-AI Workflow Method"
+  log "Welcome to PAW Method — Purposeful Workflow Method"
   log ""
 
   if [ -f "$CONFIG" ]; then

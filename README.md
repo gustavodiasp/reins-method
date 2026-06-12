@@ -24,7 +24,7 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square"></a>
 </p>
 
-# PAW Method — Pair-AI Workflow Method
+# PAW Method — Purposeful Workflow Method
 
 A universal, agent-agnostic AI pair-programming workflow. Install it once, globally,
 and use it in every project — without ever adding files to a project repository.

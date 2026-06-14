@@ -1,6 +1,6 @@
 {
   "name": "reins-method",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "REINS Method — agent-agnostic AI pair-programming workflow. Interactive installer.",
   "license": "MIT",
   "homepage": "https://github.com/gustavodiasp/reins-method",

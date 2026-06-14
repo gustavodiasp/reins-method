@@ -81,13 +81,9 @@ global install covers every project on the machine, in every supported agent.
 
 ### Why does the installer need Node, if REINS is a bash CLI?
 
-Only the *installer* (`npx reins-method install`) uses Node — for the
-[@clack/prompts](https://github.com/bombshell-dev/clack)-based arrow-key menus,
-in the same style as [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)'s
-`npx bmad-method install`. It collects your answers, then hands them to `bin/reins
-install --non-interactive` to do the actual file work. Everything you run
-afterwards — `reins update`, `reins sync`, `reins new-adapter`, etc. — is plain
-bash with no runtime dependencies. If you'd rather not use Node at all, `install.sh`
+Only the *installer* (`npx reins-method install`) uses Node, for the arrow-key
+menus. Everything you run afterwards — `reins update`, `reins sync`, `reins
+new-adapter`, etc. — is plain bash with no runtime dependencies. No Node? `install.sh`
 runs the same wizard with `read -p` prompts instead of menus.
 
 ---
@@ -171,26 +167,25 @@ or invoke `skill-creator` for guided creation. See [SKILLS.md](SKILLS.md).
 ## Personas, Party Mode & Code Review
 
 Six built-in persona skills give you BMAD-style perspectives natively, with no
-external install — each named after its role (`reins-<role>`), with a character
-identity for flavor:
+external install:
 
-| Skill | Persona | Lens |
-|---|---|---|
-| `reins-business-analyst` | Toby | Methodical, evidence-based (Porter, Minto Pyramid), represents every stakeholder — including the inconvenient ones — never takes sides |
-| `reins-technical-writer` | Pam | CommonMark/DITA/OpenAPI, writes for the reader with zero context, diagrams over walls of text |
-| `reins-product-manager` | Jim | Jobs-to-be-Done, pragmatic and people-focused, skeptical of complexity that doesn't earn its cost |
-| `reins-ux-designer` | Erin | Deeply empathetic, thinks in user flows and friction points, every decision serves a genuine user need |
-| `reins-system-architect` | David | Calm and strategic, favors proven tech, developer productivity, ties decisions to business value |
-| `reins-senior-engineer` | Angela | Test-first (red/green/refactor), 100% passing before review, no shortcuts |
+| Skill | Lens |
+|---|---|
+| `reins-business-analyst` | Methodical, evidence-based (Porter, Minto Pyramid), represents every stakeholder — including the inconvenient ones — never takes sides |
+| `reins-technical-writer` | CommonMark/DITA/OpenAPI, writes for the reader with zero context, diagrams over walls of text |
+| `reins-product-manager` | Jobs-to-be-Done, pragmatic and people-focused, skeptical of complexity that doesn't earn its cost |
+| `reins-ux-designer` | Deeply empathetic, thinks in user flows and friction points, every decision serves a genuine user need |
+| `reins-system-architect` | Calm and strategic, favors proven tech, developer productivity, ties decisions to business value |
+| `reins-senior-engineer` | Test-first (red/green/refactor), 100% passing before review, no shortcuts |
 
-Each is callable individually ("give me David's take on this"). Before a
-breakdown, ask for **`party-mode`** — Michael (Facilitator) picks the relevant
-personas (always Toby) and announces the lineup, each speaks in turn, then Jim
-(Synthesizer) distills it into what matters for the breakdown. Before proposing a
-commit message, ask for **`code-review`** — Michael opens the session and
-launches independent subagents (Dwight for logic, Creed for security, and Oscar for
-requirements if a SPEC exists) for adversarial, parallel review; Jim then closes
-with a plain-language summary of what needs fixing before merge.
+Each is callable individually (e.g. "give me the system architect's take on
+this"). Before a breakdown, ask for **`party-mode`** — a facilitator picks the
+relevant personas (always the business analyst) and announces the lineup, each
+speaks in turn, then a synthesizer distills it into what matters for the
+breakdown. Before proposing a commit message, ask for **`code-review`** — it
+launches independent subagents (logic, security, and requirements if a SPEC
+exists) for adversarial, parallel review, then closes with a plain-language
+summary of what needs fixing before merge.
 
 ---
 

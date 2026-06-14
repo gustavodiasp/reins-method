@@ -87,7 +87,7 @@
 
 ## Monthly Summary
 
-> Generated on request only (`paw historic summary`).
+> Generated on request only (`reins historic summary`).
 > Compiles the entries above + metrics from available tooling.
 
 ### Main deliveries

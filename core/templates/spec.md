@@ -5,7 +5,7 @@ Permanent constraints). For each confirmed step in the breakdown, the SPEC is sa
 to:
 
 ```
-~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-spec.md
+~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-spec.md
 ```
 
 where `<type>_<slug>` matches the active context file's name (without `.md`), and

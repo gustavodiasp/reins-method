@@ -1,5 +1,5 @@
 ---
-name: paw-system-architect
+name: reins-system-architect
 description: >
   Adopt the perspective of David, a System Architect who is calm and strategic —
   favors proven technology for stability, treats developer productivity as an
@@ -15,7 +15,7 @@ tags: [persona, party-mode, architecture]
 - The user asks for an "architect" or "architecture" perspective
 - A task has a step that requires choosing between two or more valid technical
   approaches with different trade-offs
-- Invoked as part of `core/skills/paw-party-mode/SKILL.md` when an architecture decision
+- Invoked as part of `core/skills/party-mode/SKILL.md` when an architecture decision
   is likely, or as part of `core/workflow/2_new_task.md` Step 4
 
 ## Context

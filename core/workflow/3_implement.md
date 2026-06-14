@@ -39,7 +39,7 @@ Do not write any implementation before the SPEC is provided for that step.
 Once I give you the SPEC for this step, save it verbatim to:
 
 ```
-~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-spec.md
+~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-spec.md
 ```
 
 — `<type>_<slug>` matches the active context file's name, `NN` is this step's
@@ -55,13 +55,13 @@ this is the first step. See `core/templates/spec.md` for the structure.
 - Save your plan to `step-NN-plan.md` alongside the SPEC, following
   `core/templates/plan.md`
 - If no adapter override defines a TDD/SDD process for this stack, the
-  `core/skills/paw-senior-engineer/SKILL.md` lens (test-first, red/green/refactor) applies
+  `core/skills/reins-senior-engineer/SKILL.md` lens (test-first, red/green/refactor) applies
   by default for Step 3
 
 ### Step 3 — Implement
 
 - Cover the main flow, all listed edge cases, and every listed guarantee
-- Apply the active adapter's standards (or `~/.paw/user/standards/*.md` if no adapter) throughout
+- Apply the active adapter's standards (or `~/.reins/user/standards/*.md` if no adapter) throughout
 - Do not modify any approved test
 - If existing code contradicts the SPEC, stop and ask before deciding
 
@@ -80,7 +80,7 @@ this is the first step. See `core/templates/spec.md` for the structure.
 
 ## After confirmation — update the context file
 
-Once the step is confirmed done, update `~/.paw/user/projects/<project-slug>/contexts/<active-context>.md`:
+Once the step is confirmed done, update `~/.reins/user/projects/<project-slug>/contexts/<active-context>.md`:
 
 - Mark the current step as done in `## Breakdown`
 - Update `## Current step` to the next pending step

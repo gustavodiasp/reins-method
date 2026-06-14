@@ -36,7 +36,7 @@ updated_at: # YYYY-MM-DD
 
 ## SPEC status
 <!-- Updated by the agent. Format: Step N — [not written / approved / implemented] -->
-<!-- SPEC/PLAN files live in ~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-{spec,plan}.md -->
+<!-- SPEC/PLAN files live in ~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-{spec,plan}.md -->
 
 ## My notes
 <!-- Written by me only. The agent never modifies this field. -->

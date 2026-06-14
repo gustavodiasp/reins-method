@@ -4,7 +4,7 @@ The PLAN is written by the agent, after reading the SPEC for a step, as part of
 Step 2 of `core/workflow/3_implement.md`. It is saved to:
 
 ```
-~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-plan.md
+~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-plan.md
 ```
 
 matching the `step-NN-spec.md` it responds to.

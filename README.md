@@ -1,15 +1,14 @@
 ```
-█████ █████ ███ █   █  ████
-█   █ █      █  ██  █ █
-█   █ █      █  █ █ █ █
-█████ ████   █  █  ██  ███
-█ █   █      █  █   █     █
-█  █  █      █  █   █     █
-█   █ █████ ███ █   █ ████
+      ,~~_              ____  ___________   _______
+      |/\ =_ _ ~       / __ \/ ____/  _/ | / / ___/
+       _( )_( )\~~    / /_/ / __/  / //  |/ /\__ \
+       \,\  _|\ \~~~ / _, _/ /____/ // /|  /___/ /
+          \`   \    /_/ |_/_____/___/_/ |_//____/
+          `    `
 
-  agent-agnostic · stack-agnostic
-  globally installed · customizable
-  ──────────────────────────────────────────
+  structured AI pair programming method
+  ──────────────────────────────────────────────────
+  agent-agnostic · stack-agnostic · globally installed
 ```
 
 <p align="center">
@@ -20,10 +19,6 @@
 </p>
 
 # REINS Method
-
-> AI is like a horse — far stronger than any human, but without a rider it goes
-> wherever it wants. REINS is the bridle. It does not limit the horse; it gives the
-> rider control over where that power goes.
 
 A universal, agent-agnostic AI pair-programming workflow. Install it once, globally,
 and use it in every project — without ever adding files to a project repository.
@@ -329,4 +324,4 @@ authors — nothing here is a fork or a dependency):
 
 ## License
 
-MIT (or your choice — update before publishing).
+MIT — see [LICENSE](LICENSE).

@@ -8,28 +8,25 @@
 
 set -euo pipefail
 
-# Warm orange -> amber gradient. Falls back to plain text when not attached
-# to a color-capable terminal (e.g. piped logs).
+# Green palette. Falls back to plain text when not attached to a
+# color-capable terminal (e.g. piped logs).
 if [ -t 1 ] && [ "${TERM:-}" != "dumb" ]; then
-  C1='\033[38;5;208m'; C2='\033[38;5;209m'; C3='\033[38;5;215m'
-  C4='\033[38;5;221m'; C5='\033[38;5;222m'; C6='\033[38;5;223m'
-  C7='\033[38;5;224m'
-  BOLD='\033[1m'; RESET='\033[0m'
+  HORSE='\033[32m'; REINS='\033[92m'; MUTED='\033[2;32m'; RESET='\033[0m'
 else
-  C1=''; C2=''; C3=''; C4=''; C5=''; C6=''; C7=''; BOLD=''; RESET=''
+  HORSE=''; REINS=''; MUTED=''; RESET=''
 fi
 
 printf "%b\n" \
-"${C1}█████ █████ ███ █   █  ████${RESET}" \
-"${C2}█   █ █      █  ██  █ █${RESET}" \
-"${C3}█   █ █      █  █ █ █ █${RESET}" \
-"${C4}█████ ████   █  █  ██  ███${RESET}" \
-"${C5}█ █   █      █  █   █     █${RESET}" \
-"${C6}█  █  █      █  █   █     █${RESET}" \
-"${C7}█   █ █████ ███ █   █ ████${RESET}" \
+"${HORSE}      ,~~_              ${REINS}____  ___________   _______${RESET}" \
+"${HORSE}      |/\\ =_ _ ~       ${REINS}/ __ \\/ ____/  _/ | / / ___/${RESET}" \
+"${HORSE}       _( )_( )\\~~    ${REINS}/ /_/ / __/  / //  |/ /\\__ \\${RESET}" \
+"${HORSE}       \\,\\  _|\\ \\~~~ ${REINS}/ _, _/ /____/ // /|  /___/ /${RESET}" \
+"${HORSE}          \\\`   \\    ${REINS}/_/ |_/_____/___/_/ |_//____/${RESET}" \
+"${HORSE}          \`    \`${RESET}" \
 "" \
-"${BOLD}AI is like a horse — strong, but it goes where it wants without a rider.${RESET}" \
-"${BOLD}REINS is the bridle.${RESET}" \
+"${MUTED}  structured AI pair programming method${RESET}" \
+"${MUTED}  ──────────────────────────────────────────────────${RESET}" \
+"  agent-agnostic · stack-agnostic · globally installed" \
 ""
 
 REPO_URL="${REINS_REPO_URL:-https://github.com/gustavodiasp/reins-method.git}"

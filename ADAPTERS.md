@@ -1,11 +1,11 @@
 # Adapters
 
-An adapter teaches PAW about a specific stack, company, or team. It's the only place
+An adapter teaches REINS about a specific stack, company, or team. It's the only place
 where stack-specific or proprietary content should live — the `core/` engine never
 contains it.
 
-Adapters are **user-owned**: they live at `~/.paw/user/adapters/<name>/`, are never
-modified by `paw update`, and you decide whether to keep them local, share them
+Adapters are **user-owned**: they live at `~/.reins/user/adapters/<name>/`, are never
+modified by `reins update`, and you decide whether to keep them local, share them
 privately within a team, or publish them.
 
 ---
@@ -13,13 +13,13 @@ privately within a team, or publish them.
 ## Creating an adapter
 
 ```bash
-paw new-adapter my-company
+reins new-adapter my-company
 ```
 
 This scaffolds:
 
 ```
-~/.paw/user/adapters/my-company/
+~/.reins/user/adapters/my-company/
 ├── ADAPTER.md
 ├── standards/
 │   └── floor.md
@@ -73,7 +73,7 @@ hotfix workflows, etc.). See [SKILLS.md](SKILLS.md).
 ## Example: a minimal Rails adapter
 
 ```
-~/.paw/user/adapters/rails/
+~/.reins/user/adapters/rails/
 ├── ADAPTER.md          # stacks: [ruby]
 ├── standards/
 │   └── floor.md         # "use RSpec", "service objects under app/services", ...
@@ -84,7 +84,7 @@ hotfix workflows, etc.). See [SKILLS.md](SKILLS.md).
 ## Example: a minimal Python/FastAPI adapter
 
 ```
-~/.paw/user/adapters/fastapi/
+~/.reins/user/adapters/fastapi/
 ├── ADAPTER.md          # stacks: [python]
 ├── standards/
 │   └── floor.md         # "pydantic models in schemas/", "pytest", ...
@@ -105,13 +105,13 @@ component (`(backend)`, `(frontend)`, `(integration)`), and the context file's
 
 ## Sharing adapters
 
-- **Local only**: do nothing — it's already at `~/.paw/user/adapters/<name>/`.
+- **Local only**: do nothing — it's already at `~/.reins/user/adapters/<name>/`.
 - **Private team sharing**: put it in a private git repo, `git clone` it into
-  `~/.paw/user/adapters/<name>/` on each machine.
+  `~/.reins/user/adapters/<name>/` on each machine.
 - **Public**: publish it if there's nothing proprietary (no internal library names,
   no internal process docs, no personal data). Review it the same way you'd review
   any other open-source contribution before publishing.
 
-PAW core never inspects adapter contents beyond `ADAPTER.md`'s `stacks:` field and the
+REINS core never inspects adapter contents beyond `ADAPTER.md`'s `stacks:` field and the
 optional `workflow/3_implement.md` override — it's safe to keep adapters completely
 separate from this repo.

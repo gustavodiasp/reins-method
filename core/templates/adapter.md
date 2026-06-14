@@ -1,12 +1,12 @@
 # Adapter Pack Template
 
-An **adapter** teaches PAW about a specific stack, company, or team's conventions. Adapters
-are user-owned: they live in `~/.paw/user/adapters/<name>/`, are never modified by `paw update`,
-and can be shared (or kept private) independently of PAW core.
+An **adapter** teaches REINS about a specific stack, company, or team's conventions. Adapters
+are user-owned: they live in `~/.reins/user/adapters/<name>/`, are never modified by `reins update`,
+and can be shared (or kept private) independently of REINS core.
 
 Scaffold a new one with:
 ```
-paw new-adapter <name>
+reins new-adapter <name>
 ```
 
 ---
@@ -86,9 +86,9 @@ for them.
 ## Sharing an adapter
 
 Adapters can be:
-- Kept entirely local under `~/.paw/user/adapters/<name>/`
+- Kept entirely local under `~/.reins/user/adapters/<name>/`
 - Shared as a private git repo and cloned into that path
 - Published publicly if the conventions/skills inside contain nothing proprietary
 
-PAW core never inspects adapter contents beyond `ADAPTER.md`'s `stacks:` field and
+REINS core never inspects adapter contents beyond `ADAPTER.md`'s `stacks:` field and
 the optional `workflow/3_implement.md` override.

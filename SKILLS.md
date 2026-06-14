@@ -10,24 +10,24 @@ when a workflow phase clearly calls for it.
 
 | Skill applies to... | Location |
 |---|---|
-| Everyone, any stack (rare — keep core minimal) | `~/.paw/core/skills/<name>/` |
-| Only you, any project | `~/.paw/user/skills/<name>/` |
-| Only a specific stack/company | `~/.paw/user/adapters/<adapter>/skills/<name>/` |
+| Everyone, any stack (rare — keep core minimal) | `~/.reins/core/skills/<name>/` |
+| Only you, any project | `~/.reins/user/skills/<name>/` |
+| Only a specific stack/company | `~/.reins/user/adapters/<adapter>/skills/<name>/` |
 
 Most custom skills belong in an adapter (if stack/company-specific) or in
-`~/.paw/user/skills/` (if personal and general-purpose).
+`~/.reins/user/skills/` (if personal and general-purpose).
 
 ---
 
 ## Creating a skill
 
 ```bash
-paw new-skill my-skill
+reins new-skill my-skill
 ```
 
-This scaffolds `~/.paw/user/skills/my-skill/SKILL.md`. Or, for guided creation, ask
+This scaffolds `~/.reins/user/skills/my-skill/SKILL.md`. Or, for guided creation, ask
 your agent to use the **skill-creator** meta-skill
-(`~/.paw/core/skills/paw-skill-creator/SKILL.md`) — it will ask what the skill should do,
+(`~/.reins/core/skills/skill-creator/SKILL.md`) — it will ask what the skill should do,
 when it should trigger, whether it's read-only, and where it belongs (user vs.
 adapter), then draft the file for your review before writing it.
 

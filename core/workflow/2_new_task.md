@@ -39,7 +39,7 @@ This context shapes every decision we make — architecture, naming, scope.
 
 If the user asks for a multi-perspective discussion ("party mode", "discuss this
 first", or the task has real ambiguity, multiple stakeholders, or an unclear "why"),
-invoke `core/skills/paw-party-mode/SKILL.md` now, before proposing the breakdown. Its
+invoke `core/skills/party-mode/SKILL.md` now, before proposing the breakdown. Its
 synthesis informs Step 3 and Step 4 below — it does not replace them.
 
 ---
@@ -74,7 +74,7 @@ I will make the final decision. Once decided, the rationale goes into the SPEC u
 
 ## Step 5 — Create the context file
 
-After I confirm the breakdown and any architecture decisions, create the context file for this task at `~/.paw/user/projects/<project-slug>/contexts/<type>_<slug>.md` (see `1_orchestrator.md` §1 and §4 for how `<project-slug>` is determined).
+After I confirm the breakdown and any architecture decisions, create the context file for this task at `~/.reins/user/projects/<project-slug>/contexts/<type>_<slug>.md` (see `1_orchestrator.md` §1 and §4 for how `<project-slug>` is determined).
 
 1. **Check for an active context** — glob `contexts/*.md` and read frontmatter. If a file already has `status: active`, follow the interrupt procedure in `1_orchestrator.md` §4 before continuing.
 

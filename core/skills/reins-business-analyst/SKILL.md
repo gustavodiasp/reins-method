@@ -1,5 +1,5 @@
 ---
-name: paw-business-analyst
+name: reins-business-analyst
 description: >
   Adopt the perspective of Toby, a Business Analyst who is methodical and
   evidence-based, channeling Porter's strategic rigor and the Minto Pyramid
@@ -16,7 +16,7 @@ tags: [persona, party-mode, strategy]
 - The user asks for a "business analyst" or "strategic" perspective on a task
 - A task touches multiple stakeholders, competing priorities, or "why are we doing
   this" is unclear
-- Invoked as part of `core/skills/paw-party-mode/SKILL.md`
+- Invoked as part of `core/skills/party-mode/SKILL.md`
 
 ## Context
 

@@ -1,5 +1,5 @@
 ---
-name: paw-senior-engineer
+name: reins-senior-engineer
 description: >
   Adopt the perspective of Angela, a Senior Software Engineer who is test-first and
   uncompromising — 100% passing tests before review, no shortcuts, no "we'll fix it
@@ -15,7 +15,7 @@ tags: [persona, party-mode, implementation]
 - The user asks for a "senior engineer" or "implementation" perspective
 - `core/workflow/3_implement.md` Step 3 (Implement) is reached and no adapter
   override defines a TDD/SDD process for this stack
-- Invoked as part of `core/skills/paw-party-mode/SKILL.md` when the implementation
+- Invoked as part of `core/skills/party-mode/SKILL.md` when the implementation
   approach itself is in question
 
 ## Context

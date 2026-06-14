@@ -61,7 +61,7 @@ If there is no clear next step, say so explicitly.
 
 ## Optional — Code review
 
-On request, invoke `core/skills/paw-code-review/SKILL.md` against the full diff for this
+On request, invoke `core/skills/code-review/SKILL.md` against the full diff for this
 task before proposing the commit message in Step 5. Its findings are presented to
 the user, who decides whether to address anything before proceeding.
 
@@ -91,7 +91,7 @@ Present one primary suggestion and one alternative if the scope could be describ
 ## Step 6 — Link the PR in the SPEC
 
 Add the PR link to this task's spec directory at
-`~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/`:
+`~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/`:
 
 1. Identify the highest-numbered `step-NN-spec.md` for this task.
 2. Add the PR URL under a `## PR` section at the bottom of that file.
@@ -122,11 +122,11 @@ Do not act on any comment before I confirm which ones to address. Comments marke
 
 ## Step 8 — Record historic entry (if historic mode is on)
 
-Check `~/.paw/user/config.yaml` for `historic_mode: on`. If it is off, skip this step entirely.
+Check `~/.reins/user/config.yaml` for `historic_mode: on`. If it is off, skip this step entirely.
 
-If on, follow `~/.paw/core/evaluation/README.md` (Mode A — record task entry at close), using:
-- `~/.paw/core/evaluation/templates/monthly.md` to create the current month's file if it doesn't exist
-- `~/.paw/core/evaluation/templates/task-entry.md` to build the entry
+If on, follow `~/.reins/core/evaluation/README.md` (Mode A — record task entry at close), using:
+- `~/.reins/core/evaluation/templates/monthly.md` to create the current month's file if it doesn't exist
+- `~/.reins/core/evaluation/templates/task-entry.md` to build the entry
 
 This step runs while the task context is still active — that context is the source of data for the entry.
 
@@ -138,14 +138,14 @@ Do not skip this step (when historic mode is on) unless I explicitly say to.
 
 After the PR comments are reviewed and I confirm the task is closed:
 
-1. Check `~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/` for this task:
+1. Check `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/` for this task:
    - If the highest-numbered `step-NN-spec.md` has a `## PR` link, check if the PR is merged (via available tooling).
    - **Before deleting anything**, list every file that would be deleted and explain why (PR merged, or explicitly authorized by you). Wait for your confirmation.
    - Delete only the files (or the whole `specs/<type>_<slug>/` directory) you confirm.
 
 2. Delete the active context file (`<type>_<slug>.md`) for this task.
 
-3. Glob `~/.paw/user/projects/<project-slug>/contexts/*.md` for any files with `status: paused`:
+3. Glob `~/.reins/user/projects/<project-slug>/contexts/*.md` for any files with `status: paused`:
    - If none exist: confirm the workspace is clean and stop.
    - If any exist: list them (type, title, branches, updated_at) and ask: "Which context do you want to resume?"
    - On selection: set the chosen file to `status: active`, update `updated_at`, then run the branch guard (`1_orchestrator.md` §4) before proceeding.

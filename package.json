@@ -1,0 +1,30 @@
+{
+  "name": "reins-method",
+  "version": "0.1.0",
+  "description": "REINS Method — agent-agnostic AI pair-programming workflow. Interactive installer.",
+  "license": "MIT",
+  "homepage": "https://github.com/gustavodiasp/reins-method",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gustavodiasp/reins-method.git"
+  },
+  "bin": {
+    "reins-method": "tools/installer/cli.js"
+  },
+  "files": [
+    "tools/installer",
+    "bin",
+    "core",
+    "agents",
+    "*.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.8.2",
+    "commander": "^12.1.0",
+    "picocolors": "^1.1.1"
+  }
+}

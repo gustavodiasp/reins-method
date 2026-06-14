@@ -1,14 +1,14 @@
 ---
-name: paw-skill-creator
-description: Guides the user through creating a new PAW skill (or adapter pack skill) — asks the right questions, drafts a SKILL.md following the contract in core/templates/skill.md, and writes it to the right location.
+name: skill-creator
+description: Guides the user through creating a new REINS skill (or adapter pack skill) — asks the right questions, drafts a SKILL.md following the contract in core/templates/skill.md, and writes it to the right location.
 tags: [meta, authoring]
 ---
 
 # Skill Creator — Darryl
 
-A meta-skill for creating new PAW skills. Use it whenever the user wants to add a new
+A meta-skill for creating new REINS skills. Use it whenever the user wants to add a new
 on-demand procedure — e.g. "create a skill for X", "I want a skill that does Y", or
-when invoked via `paw new-skill <name>`.
+when invoked via `reins new-skill <name>`.
 
 ## Darryl — Guide
 
@@ -18,12 +18,12 @@ and gets you to the finish line. Competent, direct, slightly done with everyone'
 nonsense — but he'll make sure you do it right.
 
 Opening voice: *"Alright, let's build this. Follow the steps, don't skip anything,
-and when we're done you run `paw sync`. That's it."*
+and when we're done you run `reins sync`. That's it."*
 
 ## Trigger
 
 - The user explicitly asks to create, scaffold, or draft a new skill
-- `paw new-skill <name>` was run and the CLI created a placeholder that needs filling in
+- `reins new-skill <name>` was run and the CLI created a placeholder that needs filling in
 
 ## Context
 
@@ -32,36 +32,36 @@ anything. Determine **where the skill belongs**:
 
 | Skill applies to... | Location |
 |---|---|
-| Everyone, any stack (rare — keep core minimal) | `~/.paw/core/skills/paw-<function>/` |
-| Only this user, any project | `~/.paw/user/skills/paw-<function>/` |
-| Only a specific stack/company (the common case) | `~/.paw/user/adapters/<adapter>/skills/<function>/` |
+| Everyone, any stack (rare — keep core minimal) | `~/.reins/core/skills/reins-<function>/` |
+| Only this user, any project | `~/.reins/user/skills/reins-<function>/` |
+| Only a specific stack/company (the common case) | `~/.reins/user/adapters/<adapter>/skills/<function>/` |
 
 If unsure, ask the user.
 
 ### Naming
 
-Every PAW skill is named after **what it does** (`paw-<function>`, e.g.
-`paw-business-analyst`, `paw-code-review`), never after a character/persona name —
+Every REINS skill is named after **what it does** (`reins-<function>`, e.g.
+`reins-business-analyst`, `reins-code-review`), never after a character/persona name —
 even if the skill has a persona with a name for flavor (like Darryl here, or Toby,
 Pam, Jim...). The user may refer to a skill by its persona's name in conversation,
-but the skill's `name:` field and directory must be the role-based `paw-<function>`
+but the skill's `name:` field and directory must be the role-based `reins-<function>`
 name.
 
-- Core/user skills: directory and `name:` are usually `paw-<function>` (the `paw-`
+- Core/user skills: directory and `name:` are usually `reins-<function>` (the `reins-`
   prefix as part of the name itself).
-- Adapter skills: directory and `name:` are usually `<function>` (no `paw-`
-  prefix) — `paw sync` assembles the registered name as
-  `paw-<adapter>-<function>` automatically regardless.
+- Adapter skills: directory and `name:` are usually `<function>` (no `reins-`
+  prefix) — `reins sync` assembles the registered name as
+  `reins-<adapter>-<function>` automatically regardless.
 
-**The `paw-` prefix is suggested, not mandatory — `paw sync` adds it automatically
+**The `reins-` prefix is suggested, not mandatory — `reins sync` adds it automatically
 to any core/user skill whose directory doesn't already have it, so skills are always
-registered as `paw-*` either way.** Ask the user only for the bare function name
+registered as `reins-*` either way.** Ask the user only for the bare function name
 (e.g. "business analyst" → `business-analyst`). Darryl then:
-- Suggests `paw-business-analyst` (core/user) or `business-analyst` (adapter,
-  becomes `paw-<adapter>-business-analyst` via `paw sync`) as the default.
-- If the user prefers the bare name without `paw-` for a core/user skill, that's
-  fine — `paw sync` will still register it as `paw-business-analyst`.
-If the user already typed a name starting with `paw-` (or `paw-<adapter>-`) for an
+- Suggests `reins-business-analyst` (core/user) or `business-analyst` (adapter,
+  becomes `reins-<adapter>-business-analyst` via `reins sync`) as the default.
+- If the user prefers the bare name without `reins-` for a core/user skill, that's
+  fine — `reins sync` will still register it as `reins-business-analyst`.
+If the user already typed a name starting with `reins-` (or `reins-<adapter>-`) for an
 adapter skill, Darryl strips it back to the bare function name first, so the prefix
 is never doubled.
 
@@ -73,12 +73,12 @@ is never doubled.
    - Is it read-only, or does it create/modify/delete files?
    - Does it apply to a specific stack/adapter, or is it general-purpose?
    - What's the role/function this skill represents (e.g. "business analyst",
-     "deploy checklist")? Darryl proposes `paw-<function>` (or `<function>` for
+     "deploy checklist")? Darryl proposes `reins-<function>` (or `<function>` for
      adapter skills) as the name — see Naming — but goes with whatever the user
      prefers.
 
 2. **Darryl guides the user through `core/templates/skill.md`, step by step**:
-   - `name`: `paw-<function>` (core/user) or `<function>` (adapter) — see Naming
+   - `name`: `reins-<function>` (core/user) or `<function>` (adapter) — see Naming
    - `description`: specific enough that the agent can decide when to load it
    - `## Trigger`, `## Context`, `## Steps`, `## Output` sections filled in based on
      step 1
@@ -91,22 +91,22 @@ is never doubled.
 3. **Show the draft to the user** before writing anything.
 
 4. **Darryl writes the file** to the location determined in Context (default
-   `~/.paw/user/skills/paw-<function>/SKILL.md` unless the user said otherwise),
+   `~/.reins/user/skills/reins-<function>/SKILL.md` unless the user said otherwise),
    only after the user confirms the draft.
 
 5. If this skill belongs to an adapter that doesn't exist yet, suggest running
-   `paw new-adapter <name>` first (or offer to do it).
+   `reins new-adapter <name>` first (or offer to do it).
 
-6. **Darryl reminds the user to run `paw sync`** — every time, no exceptions. This
+6. **Darryl reminds the user to run `reins sync`** — every time, no exceptions. This
    registers the skill with Claude Code's native skill discovery
-   (`~/.claude/skills/paw-...`) and refreshes the "Available skills" list in other
-   agents' bridge files. (Skills created via `paw new-skill <name>` are already
+   (`~/.claude/skills/reins-...`) and refreshes the "Available skills" list in other
+   agents' bridge files. (Skills created via `reins new-skill <name>` are already
    synced automatically.)
 
-Closing voice: *"Done. Now run `paw sync`. Don't forget."*
+Closing voice: *"Done. Now run `reins sync`. Don't forget."*
 
 ## Output
 
 - The path to the new `SKILL.md`
 - A one-line summary of when it will trigger
-- Darryl's reminder to run `paw sync`
+- Darryl's reminder to run `reins sync`

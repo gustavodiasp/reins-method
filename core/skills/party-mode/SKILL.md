@@ -1,5 +1,5 @@
 ---
-name: paw-party-mode
+name: party-mode
 description: >
   Run a multi-perspective discussion over a task description before proposing a
   breakdown. Michael (Facilitator) picks the relevant persona lenses (always
@@ -36,15 +36,15 @@ doesn't replace understanding it.
 
 1. **Michael (Facilitator) opens the session.** Read the task context and decide
    which personas are relevant:
-   - **Always include `business-analyst`** (Toby) — no exceptions.
+   - **Always include `reins-business-analyst`** (Toby) — no exceptions.
    - Select additional personas based on the task:
-     - `ux-designer` (Erin) — if the task has a user-facing UI/flow dimension
-     - `system-architect` (David) — if an architecture decision is likely
-     - `product-manager` (Jim) — if job-to-be-done/user-value framing is still
+     - `reins-ux-designer` (Erin) — if the task has a user-facing UI/flow dimension
+     - `reins-system-architect` (David) — if an architecture decision is likely
+     - `reins-product-manager` (Jim) — if job-to-be-done/user-value framing is still
        unclear
-     - `technical-writer` (Pam) — if the task is primarily about docs/spec/API
+     - `reins-technical-writer` (Pam) — if the task is primarily about docs/spec/API
        clarity
-     - `senior-engineer` (Angela) — if the implementation approach itself is in
+     - `reins-senior-engineer` (Angela) — if the implementation approach itself is in
        question
    If unsure which apply beyond Toby, default to adding Jim + David + Erin (the most
    common trio for feature work).

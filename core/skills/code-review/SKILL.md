@@ -1,5 +1,5 @@
 ---
-name: paw-code-review
+name: code-review
 description: >
   Adversarial, parallel code review using independent subagents — not role-play.
   Michael (Facilitator) announces the session and calls in Dwight (logic/edge-case
@@ -42,7 +42,7 @@ don't get their own subagent and contribute no findings of their own.
    a specific PR, or a commit range — ask the user if ambiguous.
 2. Construct the unified diff for that scope.
 3. Look for a SPEC: if a context file is active, check
-   `~/.paw/user/projects/<project-slug>/specs/<type>_<slug>/` for `step-NN-spec.md`
+   `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/` for `step-NN-spec.md`
    files covering the changed steps. If none found, Oscar is skipped (note this in
    the output).
 

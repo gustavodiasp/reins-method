@@ -6,9 +6,9 @@ explicitly asks, or the active workflow phase calls for it.
 
 Scaffold a new one with:
 ```
-paw new-skill <name>
+reins new-skill <name>
 ```
-or invoke the `skill-creator` meta-skill (`~/.paw/core/skills/paw-skill-creator/SKILL.md`)
+or invoke the `skill-creator` meta-skill (`~/.reins/core/skills/skill-creator/SKILL.md`)
 for guided creation.
 
 ---
@@ -57,11 +57,11 @@ What the agent should produce or report back when the skill completes.
 - Keep skills **read-only by default** unless their purpose is explicitly to scaffold
   or modify files — and even then, preview changes and confirm before writing.
 - Name skills by **what they do**, not after a character/persona (e.g.
-  `paw-code-review`, `paw-business-analyst`) — never `persona-<name>`. The `paw-`
-  prefix is suggested for core/user skills but not mandatory — `paw sync` adds it
-  automatically if missing, so the skill is always registered as `paw-*` either
-  way. Adapter skills are usually named without the prefix (`paw sync` assembles
-  `paw-<adapter>-<function>` automatically). Avoid generic names that could collide
+  `reins-code-review`, `reins-business-analyst`) — never `persona-<name>`. The `reins-`
+  prefix is suggested for core/user skills but not mandatory — `reins sync` adds it
+  automatically if missing, so the skill is always registered as `reins-*` either
+  way. Adapter skills are usually named without the prefix (`reins sync` assembles
+  `reins-<adapter>-<function>` automatically). Avoid generic names that could collide
   across adapters (e.g. prefer `rails-crud-scaffold` over `scaffold`).
 - If a skill only makes sense for a specific stack/company, it belongs in an adapter
-  pack (`<adapter>/skills/`), not in `~/.paw/core/skills/` or `~/.paw/user/skills/`.
+  pack (`<adapter>/skills/`), not in `~/.reins/core/skills/` or `~/.reins/user/skills/`.

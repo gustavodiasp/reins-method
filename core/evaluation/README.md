@@ -1,9 +1,9 @@
 # Historic Mode
 
 Historic Mode turns daily work into a clear, evidence-based record of monthly progress.
-It is **optional** — enable it with `paw historic on`. All data it produces is
-**user-owned** and lives at `~/.paw/user/historic/`, never inside a project repo and
-never touched by `paw update`.
+It is **optional** — enable it with `reins historic on`. All data it produces is
+**user-owned** and lives at `~/.reins/user/historic/`, never inside a project repo and
+never touched by `reins update`.
 
 ---
 
@@ -26,13 +26,13 @@ helps answer questions like:
 ## Structure
 
 ```text
-~/.paw/user/historic/
+~/.reins/user/historic/
 └── YYYY-MM.md          ← one file per month
 ```
 
 Templates used to create these files live at:
 ```
-~/.paw/core/evaluation/templates/
+~/.reins/core/evaluation/templates/
 ├── monthly.md           ← empty monthly file template
 └── task-entry.md        ← empty task entry template
 ```
@@ -50,7 +50,7 @@ Use today's date to determine `YYYY-MM`.
 
 ### Step 2 — Open or create the monthly file
 
-- Check if `~/.paw/user/historic/YYYY-MM.md` exists.
+- Check if `~/.reins/user/historic/YYYY-MM.md` exists.
 - If it does **not** exist:
   - Create it from `core/evaluation/templates/monthly.md`.
   - Fill in the header (period, month).
@@ -88,7 +88,7 @@ Confirm the entry was added. Show the entry title and the file path.
 
 ---
 
-## Mode B — Monthly summary (`paw historic summary`)
+## Mode B — Monthly summary (`reins historic summary`)
 
 Generated only when explicitly requested. The agent reads the entries for the
 specified month, optionally enriches with PR/commit metrics from available tooling,

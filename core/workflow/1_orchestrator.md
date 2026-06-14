@@ -3,7 +3,7 @@ scope: always
 role: master — read first every session, defines stack detection and routing
 ---
 
-# PAW Orchestrator
+# REINS Orchestrator
 
 This file defines how the agent and the user work together on every task, in every project, regardless of stack or AI agent.
 
@@ -11,18 +11,18 @@ This file defines how the agent and the user work together on every task, in eve
 
 ---
 
-## 0 — Where PAW lives
+## 0 — Where REINS lives
 
-PAW Method is installed once, globally, at `~/.paw/`. **No PAW files ever live inside a project repository.**
+REINS Method is installed once, globally, at `~/.reins/`. **No REINS files ever live inside a project repository.**
 
 ```
-~/.paw/
-├── core/                     ← this engine (updated via `paw update`)
+~/.reins/
+├── core/                     ← this engine (updated via `reins update`)
 │   ├── workflow/             ← phase files (this file + 2/3/4)
 │   ├── templates/            ← context, current_task, adapter, skill templates
 │   ├── evaluation/           ← historic mode templates
 │   └── skills/               ← meta-skills (e.g. skill-creator)
-├── user/                     ← user-owned, never touched by `paw update`
+├── user/                     ← user-owned, never touched by `reins update`
 │   ├── config.yaml           ← name, agent, active adapter, historic mode
 │   ├── standards/            ← company.md (floor) + personal.md
 │   ├── adapters/             ← installed adapter packs
@@ -45,7 +45,7 @@ PAW Method is installed once, globally, at `~/.paw/`. **No PAW files ever live i
 
 1. Determine the project root (nearest ancestor directory containing `.git`, or the current working directory if none).
 2. Compute `<project-slug>` — a stable, filesystem-safe identifier for this project (e.g. derived from the repo name, or the git remote URL if available, or the absolute path with `/` replaced by `-`).
-3. All state for this project lives under `~/.paw/user/projects/<project-slug>/`. Create this directory (with `contexts/` and `specs/`) if it does not exist yet.
+3. All state for this project lives under `~/.reins/user/projects/<project-slug>/`. Create this directory (with `contexts/` and `specs/`) if it does not exist yet.
 
 ---
 
@@ -78,7 +78,7 @@ of the codebase, docs, and more).
 - If it exists, read it at session start for an architecture overview before diving
   into the task — it's cheaper and broader than re-reading raw files. `graph.json`
   and `wiki/` are also available for deeper queries if needed.
-- If it doesn't exist, skip silently. PAW does not require graphify; it only uses its
+- If it doesn't exist, skip silently. REINS does not require graphify; it only uses its
   output when present. See "Companion tools" in the repo `README.md` for how to
   generate it.
 
@@ -86,13 +86,13 @@ of the codebase, docs, and more).
 
 ## 3 — Load the adapter (if any)
 
-1. Read `~/.paw/user/config.yaml` for `adapters:` — a list of installed adapter packs, each with an `ADAPTER.md` declaring which stack(s) it applies to.
+1. Read `~/.reins/user/config.yaml` for `adapters:` — a list of installed adapter packs, each with an `ADAPTER.md` declaring which stack(s) it applies to.
 2. Match the detected stack(s) against installed adapters.
 3. If a match is found, load (in this order):
    - `<adapter>/standards/floor.md` — non-negotiable conventions (precedence 1)
    - `<adapter>/standards/*.md` — any additional adapter standards (precedence 2, must never conflict with the floor)
    - `<adapter>/workflow/3_implement.md` — if present, **overrides** `core/workflow/3_implement.md` for the development phase
-4. If no adapter matches, proceed with the generic conventions in `~/.paw/user/standards/company.md` and `~/.paw/user/standards/personal.md` (if the user has filled them in), and the generic `core/workflow/3_implement.md`.
+4. If no adapter matches, proceed with the generic conventions in `~/.reins/user/standards/company.md` and `~/.reins/user/standards/personal.md` (if the user has filled them in), and the generic `core/workflow/3_implement.md`.
 5. If multiple stacks are detected (e.g. `ruby` + `node`), load every matching adapter. Steps in the breakdown are then labeled by which adapter/stack they belong to.
 
 **Standards precedence rule:** if `personal.md` (or an adapter's secondary standards) contradicts the floor (`company.md` or `<adapter>/standards/floor.md`), **stop immediately** and ask the user to resolve the conflict before proceeding.
@@ -101,7 +101,7 @@ of the codebase, docs, and more).
 
 ## 4 — Active context
 
-Context files track the state of every work item for this project, under `~/.paw/user/projects/<project-slug>/contexts/`.
+Context files track the state of every work item for this project, under `~/.reins/user/projects/<project-slug>/contexts/`.
 
 ### Naming
 
@@ -129,7 +129,7 @@ updated_at: YYYY-MM-DD
 
 **Exactly one context file per project may have `status: active` at any time.**
 
-- On session start: glob `~/.paw/user/projects/<project-slug>/contexts/*.md`, read frontmatter, find the file with `status: active`.
+- On session start: glob `~/.reins/user/projects/<project-slug>/contexts/*.md`, read frontmatter, find the file with `status: active`.
 - On interrupt (new task arrives while one is active): set the current active file to `status: paused`, create a new file with `status: active` (see `2_new_task.md`).
 - On close: delete the closed file, list all `status: paused` files, ask which to resume.
 
@@ -151,7 +151,7 @@ When `branches` has more than one entry, before proceeding:
 |---|---|
 | `core/workflow/1_orchestrator.md` | Session start (this file) |
 | Active context file (§4) | Session start |
-| Adapter standards (§3), or `~/.paw/user/standards/*.md` | Session start |
+| Adapter standards (§3), or `~/.reins/user/standards/*.md` | Session start |
 | `graphify-out/GRAPH_REPORT.md` (§2.5) | Session start, only if present |
 
 ### Phase-specific
@@ -164,7 +164,7 @@ When `branches` has more than one entry, before proceeding:
 
 ### On-demand (skills)
 
-Skills in `~/.paw/core/skills/`, `<adapter>/skills/`, and `~/.paw/user/skills/` are **never loaded proactively**. Invoke them only when the user explicitly requests, or when the task clearly calls for it.
+Skills in `~/.reins/core/skills/`, `<adapter>/skills/`, and `~/.reins/user/skills/` are **never loaded proactively**. Invoke them only when the user explicitly requests, or when the task clearly calls for it.
 
 ---
 
@@ -178,7 +178,7 @@ New task arrives
   → load project map if present (§2.5)
   → load adapter standards, or generic standards (§3)
   → understand task + epic
-  → optional: party-mode discussion (core/skills/paw-party-mode/SKILL.md)
+  → optional: party-mode discussion (core/skills/party-mode/SKILL.md)
   → propose breakdown (per component if multi-stack)
   → flag architecture decisions
   → wait for confirmation
@@ -194,7 +194,7 @@ User gives close order:
   → summarize what was done
   → assess epic impact
   → identify next step
-  → optional: code review (core/skills/paw-code-review/SKILL.md)
+  → optional: code review (core/skills/code-review/SKILL.md)
   → review PR comments
   → propose commit message(s)
   → record historic entry (if historic mode is on)
@@ -213,9 +213,9 @@ User gives close order:
 - Apply adapter and user standards at all times — they are not optional
 - If standards conflict, flag immediately and wait for a decision
 - When in doubt about which file applies, ask
-- When a PR is opened, record its URL in the context frontmatter (`prs`) and in every SPEC under `~/.paw/user/projects/<project-slug>/specs/` that belongs to this task
+- When a PR is opened, record its URL in the context frontmatter (`prs`) and in every SPEC under `~/.reins/user/projects/<project-slug>/specs/` that belongs to this task
 - When a task requires more than one agent, run them in parallel whenever there are no dependencies
-- At session start, always glob `~/.paw/user/projects/<project-slug>/contexts/*.md` and read frontmatter to identify the active context
+- At session start, always glob `~/.reins/user/projects/<project-slug>/contexts/*.md` and read frontmatter to identify the active context
 
 ---
 

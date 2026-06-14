@@ -29,25 +29,20 @@ async function getColors() {
 async function printBanner() {
   const c = await getColors();
   const lines = [
-    '█████ █████ ███ █   █  ████',
-    '█   █ █      █  ██  █ █',
-    '█   █ █      █  █ █ █ █',
-    '█████ ████   █  █  ██  ███',
-    '█ █   █      █  █   █     █',
-    '█  █  █      █  █   █     █',
-    '█   █ █████ ███ █   █ ████',
+    ['      ,~~_              ', '____  ___________   _______'],
+    ['      |/\\ =_ _ ~       ', '/ __ \\/ ____/  _/ | / / ___/'],
+    ['       _( )_( )\\~~    ', '/ /_/ / __/  / //  |/ /\\__ \\'],
+    ['       \\,\\  _|\\ \\~~~ ', '/ _, _/ /____/ // /|  /___/ /'],
+    ['          \\`   \\    ', '/_/ |_/_____/___/_/ |_//____/'],
+    ['          `    `', ''],
   ];
-  const colors = [c.red, c.red, c.yellow, c.yellow, c.yellow, c.yellow, c.yellow];
-  for (let i = 0; i < lines.length; i++) {
-    console.log(colors[i] ? colors[i](lines[i]) : lines[i]);
+  for (const [horse, reins] of lines) {
+    console.log(c.green(horse) + c.greenBright(reins));
   }
   console.log('');
-  console.log(
-    c.bold(
-      'AI is like a horse — strong, but it goes where it wants without a rider.',
-    ),
-  );
-  console.log(c.bold('REINS is the bridle.'));
+  console.log(c.dim(c.green('  structured AI pair programming method')));
+  console.log(c.dim(c.green('  ──────────────────────────────────────────────────')));
+  console.log('  agent-agnostic · stack-agnostic · globally installed');
   console.log('');
 }
 

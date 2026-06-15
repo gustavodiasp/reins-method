@@ -137,12 +137,34 @@ async function runInstall() {
     process.exit(0);
   }
 
+  const language = await clack.text({
+    message: 'Language to interact in (agent replies, skill/persona output)?',
+    placeholder: 'english',
+    defaultValue: 'english',
+  });
+  if (clack.isCancel(language)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
+  }
+
+  const docLanguage = await clack.text({
+    message: 'Language for documentation (code comments, docstrings, READMEs, etc.)?',
+    placeholder: 'english',
+    defaultValue: 'english',
+  });
+  if (clack.isCancel(docLanguage)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
+  }
+
   const args = [
     'install',
     '--non-interactive',
     `--agent=${agent}`,
     `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
+    `--language=${language || 'english'}`,
+    `--doc-language=${docLanguage || 'english'}`,
   ];
   if (adapterPath) args.push(`--adapter=${adapterPath}`);
 

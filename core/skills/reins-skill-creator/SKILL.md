@@ -1,5 +1,5 @@
 ---
-name: skill-creator
+name: reins-skill-creator
 description: Guides the user through creating a new REINS skill (or adapter pack skill) — asks the right questions, drafts a SKILL.md following the contract in core/templates/skill.md, and writes it to the right location.
 tags: [meta, authoring]
 ---

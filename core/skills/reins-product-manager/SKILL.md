@@ -14,7 +14,7 @@ tags: [persona, party-mode, product]
 
 - The user asks for a "PM" or "product" perspective on a task
 - A new task is being defined and its user value/purpose isn't yet explicit
-- Invoked as part of `core/skills/party-mode/SKILL.md` (always included), or
+- Invoked as part of `core/skills/reins-party-mode/SKILL.md` (always included), or
   alongside `core/workflow/2_new_task.md` Step 1
 
 ## Context

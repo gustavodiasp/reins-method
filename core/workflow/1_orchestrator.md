@@ -21,9 +21,9 @@ REINS Method is installed once, globally, at `~/.reins/`. **No REINS files ever 
 │   ├── workflow/             ← phase files (this file + 2/3/4)
 │   ├── templates/            ← context, current_task, adapter, skill templates
 │   ├── evaluation/           ← historic mode templates
-│   └── skills/               ← meta-skills (e.g. skill-creator)
+│   └── skills/               ← meta-skills (e.g. reins-skill-creator)
 ├── user/                     ← user-owned, never touched by `reins update`
-│   ├── config.yaml           ← name, agent, active adapter, historic mode
+│   ├── config.yaml           ← name, agent, active adapter, historic mode, language, doc_language
 │   ├── standards/            ← company.md (floor) + personal.md
 │   ├── adapters/             ← installed adapter packs
 │   ├── skills/               ← user's custom skills
@@ -38,6 +38,24 @@ REINS Method is installed once, globally, at `~/.reins/`. **No REINS files ever 
 │   └── historic/             ← optional monthly tracking (if historic mode is on)
 └── agents/                   ← generated bridge files per AI agent
 ```
+
+---
+
+## 0.5 — Language
+
+Your agent bridge file's "Language" section (generated from `~/.reins/user/config.yaml`'s
+`language` and `doc_language`, both default `english`) sets two independent things for
+this entire session:
+
+- **Interaction language** (`language`) — the language you use to talk to the user:
+  chat replies, questions, breakdowns, and all output from REINS skills/personas
+  (party-mode, code-review, etc.).
+- **Documentation language** (`doc_language`) — the language used when *writing*:
+  code comments, docstrings, commit messages, READMEs, SPECs, and other generated docs.
+
+If a project's existing code/docs are already consistently written in a different
+language than `doc_language`, follow the project's existing convention instead —
+don't introduce a second language into an established codebase. When in doubt, ask.
 
 ---
 
@@ -150,6 +168,7 @@ When `branches` has more than one entry, before proceeding:
 | File | When |
 |---|---|
 | `core/workflow/1_orchestrator.md` | Session start (this file) |
+| Language settings (§0.5) | Session start |
 | Active context file (§4) | Session start |
 | Adapter standards (§3), or `~/.reins/user/standards/*.md` | Session start |
 | `graphify-out/GRAPH_REPORT.md` (§2.5) | Session start, only if present |
@@ -178,7 +197,7 @@ New task arrives
   → load project map if present (§2.5)
   → load adapter standards, or generic standards (§3)
   → understand task + epic
-  → optional: party-mode discussion (core/skills/party-mode/SKILL.md)
+  → optional: party-mode discussion (core/skills/reins-party-mode/SKILL.md)
   → propose breakdown (per component if multi-stack)
   → flag architecture decisions
   → wait for confirmation
@@ -194,7 +213,7 @@ User gives close order:
   → summarize what was done
   → assess epic impact
   → identify next step
-  → optional: code review (core/skills/code-review/SKILL.md)
+  → optional: code review (core/skills/reins-code-review/SKILL.md)
   → review PR comments
   → propose commit message(s)
   → record historic entry (if historic mode is on)
@@ -207,6 +226,7 @@ User gives close order:
 ## 7 — General rules (permanent — never override)
 
 - Never write or modify a SPEC — that step belongs to the user
+- Apply the configured interaction and documentation languages (§0.5) at all times
 - Never implement before the SPEC is provided and confirmed
 - Never make architecture decisions silently — surface trade-offs and wait for input
 - Never modify approved tests

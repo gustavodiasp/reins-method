@@ -39,7 +39,7 @@ This context shapes every decision we make — architecture, naming, scope.
 
 If the user asks for a multi-perspective discussion ("party mode", "discuss this
 first", or the task has real ambiguity, multiple stakeholders, or an unclear "why"),
-invoke `core/skills/party-mode/SKILL.md` now, before proposing the breakdown. Its
+invoke `core/skills/reins-party-mode/SKILL.md` now, before proposing the breakdown. Its
 synthesis informs Step 3 and Step 4 below — it does not replace them.
 
 ---

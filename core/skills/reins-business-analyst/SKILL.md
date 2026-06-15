@@ -16,7 +16,7 @@ tags: [persona, party-mode, strategy]
 - The user asks for a "business analyst" or "strategic" perspective on a task
 - A task touches multiple stakeholders, competing priorities, or "why are we doing
   this" is unclear
-- Invoked as part of `core/skills/party-mode/SKILL.md`
+- Invoked as part of `core/skills/reins-party-mode/SKILL.md`
 
 ## Context
 

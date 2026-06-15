@@ -8,7 +8,7 @@ Scaffold a new one with:
 ```
 reins new-skill <name>
 ```
-or invoke the `skill-creator` meta-skill (`~/.reins/core/skills/skill-creator/SKILL.md`)
+or invoke the `reins-skill-creator` meta-skill (`~/.reins/core/skills/reins-skill-creator/SKILL.md`)
 for guided creation.
 
 ---

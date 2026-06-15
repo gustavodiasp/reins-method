@@ -14,7 +14,7 @@ tags: [persona, party-mode, ux]
 
 - The user asks for a "UX" or "design" perspective on a task
 - A task involves a UI, user-facing flow, form, or interaction change
-- Invoked as part of `core/skills/party-mode/SKILL.md` when the task is user-facing
+- Invoked as part of `core/skills/reins-party-mode/SKILL.md` when the task is user-facing
 
 ## Context
 

@@ -88,6 +88,10 @@ async function runInstall() {
   const configPath = path.join(REINS_HOME, 'user', 'config.yaml');
 
   clack.intro('REINS Method setup');
+  clack.note(
+    'Use the arrow keys to navigate, Enter to confirm, and Esc or Ctrl+C to cancel at any time.',
+    'How to use this menu',
+  );
 
   if (fs.existsSync(configPath)) {
     const again = await clack.confirm({
@@ -139,8 +143,8 @@ async function runInstall() {
 
   const language = await clack.text({
     message: 'Language to interact in (agent replies, skill/persona output)?',
-    placeholder: 'english',
-    defaultValue: 'english',
+    placeholder: 'English',
+    defaultValue: 'English',
   });
   if (clack.isCancel(language)) {
     clack.cancel('Install cancelled.');
@@ -149,8 +153,8 @@ async function runInstall() {
 
   const docLanguage = await clack.text({
     message: 'Language for documentation (code comments, docstrings, READMEs, etc.)?',
-    placeholder: 'english',
-    defaultValue: 'english',
+    placeholder: 'English',
+    defaultValue: 'English',
   });
   if (clack.isCancel(docLanguage)) {
     clack.cancel('Install cancelled.');
@@ -163,8 +167,8 @@ async function runInstall() {
     `--agent=${agent}`,
     `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
-    `--language=${language || 'english'}`,
-    `--doc-language=${docLanguage || 'english'}`,
+    `--language=${language || 'English'}`,
+    `--doc-language=${docLanguage || 'English'}`,
   ];
   if (adapterPath) args.push(`--adapter=${adapterPath}`);
 

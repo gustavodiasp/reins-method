@@ -24,9 +24,9 @@ printf "%b\n" \
 "${HORSE}          \\\`   \\    ${REINS}/_/ |_/_____/___/_/ |_//____/${RESET}" \
 "${HORSE}          \`    \`${RESET}" \
 "" \
-"${MUTED}  structured AI pair programming method${RESET}" \
+"${MUTED}  Structured AI pair programming method${RESET}" \
 "${MUTED}  ──────────────────────────────────────────────────${RESET}" \
-"  agent-agnostic · stack-agnostic · globally installed" \
+"  Agent-agnostic · stack-agnostic · globally installed" \
 ""
 
 REPO_URL="${REINS_REPO_URL:-https://github.com/gustavodiasp/reins-method.git}"

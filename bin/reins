@@ -17,6 +17,7 @@ CONFIG="$USER_DIR/config.yaml"
 log()  { printf '%s\n' "$*"; }
 err()  { printf 'Error: %s\n' "$*" >&2; }
 die()  { err "$*"; exit 1; }
+capitalize() { printf '%s%s' "$(printf '%s' "${1:0:1}" | tr '[:lower:]' '[:upper:]')" "${1:1}"; }
 
 print_banner() {
   local horse=$'\033[32m' rtxt=$'\033[92m' muted=$'\033[2;32m'
@@ -29,9 +30,9 @@ print_banner() {
   printf '%s%s%s%s%s\n' "$horse" '          \`   \    ' "$rtxt" '/_/ |_/_____/___/_/ |_//____/' "$reset"
   printf '%s%s%s\n' "$horse" '          `    `' "$reset"
   printf '\n'
-  printf '%s  structured AI pair programming method%s\n' "$muted" "$reset"
+  printf '%s  Structured AI pair programming method%s\n' "$muted" "$reset"
   printf '%s  ──────────────────────────────────────────────────%s\n' "$muted" "$reset"
-  printf '  agent-agnostic · stack-agnostic · globally installed\n'
+  printf '  Agent-agnostic · stack-agnostic · globally installed\n'
   printf '\n'
 
   printf '%s✓%s REINS installed to ~/.reins/%s\n' "$check" "$text" "$reset"
@@ -322,8 +323,8 @@ ${active_adapters:-(none configured — generic conventions only)}
 ${historic:-off}
 
 ## Language
-- Interaction language: ${language:-english}
-- Documentation language: ${doc_language:-english}
+- Interaction language: $(capitalize "${language:-english}")
+- Documentation language: $(capitalize "${doc_language:-english}")
 
 ## Available skills
 On-demand only — never load proactively (see \`1_orchestrator.md\` §5).
@@ -641,13 +642,13 @@ cmd_historic() {
 cmd_status() {
   print_banner
   log "REINS_HOME: $REINS_HOME"
-  if [ -d "$REINS_HOME/.git" ]; then
-    log "Version: $(git -C "$REINS_HOME" rev-parse --short HEAD 2>/dev/null) ($(git -C "$REINS_HOME" log -1 --format=%cd --date=short 2>/dev/null))"
+  if [ -f "$REINS_HOME/package.json" ]; then
+    log "Version: $(grep -m1 '"version"' "$REINS_HOME/package.json" | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
   fi
   log "Agent: $(config_get agent || echo 'not configured')"
   log "Historic mode: $(config_get historic_mode || echo 'off')"
-  log "Interaction language: $(config_get language || echo 'english')"
-  log "Documentation language: $(config_get doc_language || echo 'english')"
+  log "Interaction language: $(capitalize "$(config_get language || echo 'english')")"
+  log "Documentation language: $(capitalize "$(config_get doc_language || echo 'english')")"
   local adapters
   adapters="$(config_adapters | tr '\n' ' ')"
   log "Adapters: ${adapters:-none}"
@@ -747,26 +748,21 @@ cmd_uninstall() {
   read -r -p "Delete $REINS_HOME entirely, including user/? This cannot be undone. [y/N] " yn
   case "$yn" in
     [yY]*)
-      # Offer to back up user-created skills/adapters before deleting everything
-      local has_custom=""
-      [ -d "$USER_DIR/skills" ] && find "$USER_DIR/skills" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null | grep -q . && has_custom=1
-      [ -d "$USER_DIR/adapters" ] && find "$USER_DIR/adapters" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null | grep -q . && has_custom=1
-      if [ -n "$has_custom" ]; then
-        read -r -p "Back up your custom skills/adapters before deleting? [y/N] " backup_yn
-        case "$backup_yn" in
-          [yY]*)
-            read -r -p "Directory to copy them to: " backup_dir
-            if [ -n "$backup_dir" ]; then
-              mkdir -p "$backup_dir"
-              [ -d "$USER_DIR/skills" ] && cp -R "$USER_DIR/skills" "$backup_dir/"
-              [ -d "$USER_DIR/adapters" ] && cp -R "$USER_DIR/adapters" "$backup_dir/"
-              log "Copied $USER_DIR/skills and $USER_DIR/adapters to $backup_dir"
-            else
-              log "No directory given — skipping backup."
-            fi
-            ;;
-        esac
-      fi
+      # Offer to save the user's personalization (standards, skills, adapters,
+      # config, project contexts, historic data) before deleting everything
+      read -r -p "Save your personalizations (standards, skills, adapters, config, project contexts, historic data) before deleting? [y/N] " backup_yn
+      case "$backup_yn" in
+        [yY]*)
+          read -r -p "Directory to save them to: " backup_dir
+          if [ -n "$backup_dir" ]; then
+            mkdir -p "$backup_dir"
+            cp -R "$USER_DIR" "$backup_dir/"
+            log "Copied $USER_DIR to $backup_dir/$(basename "$USER_DIR")"
+          else
+            log "No directory given — skipping backup."
+          fi
+          ;;
+      esac
       rm -rf "$REINS_HOME"
       log "Removed $REINS_HOME"
       ;;

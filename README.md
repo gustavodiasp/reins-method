@@ -6,9 +6,9 @@
           \`   \    /_/ |_/_____/___/_/ |_//____/
           `    `
 
-  structured AI pair programming method
+  Structured AI pair programming method
   ──────────────────────────────────────────────────
-  agent-agnostic · stack-agnostic · globally installed
+  Agent-agnostic · stack-agnostic · globally installed
 ```
 
 <p align="center">

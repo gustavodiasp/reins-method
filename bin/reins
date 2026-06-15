@@ -287,6 +287,9 @@ generate_bridges() {
   active_adapters="$(config_adapters | tr '\n' ' ')"
   local historic
   historic="$(config_get historic_mode)"
+  local language doc_language
+  language="$(config_get language)"
+  doc_language="$(config_get doc_language)"
 
   local skills_md=""
   while IFS=$'\t' read -r dir reins_name; do
@@ -318,6 +321,10 @@ ${active_adapters:-(none configured — generic conventions only)}
 ## Historic mode
 ${historic:-off}
 
+## Language
+- Interaction language: ${language:-english}
+- Documentation language: ${doc_language:-english}
+
 ## Available skills
 On-demand only — never load proactively (see \`1_orchestrator.md\` §5).
 ${skills_md:-(none)}
@@ -342,6 +349,7 @@ cmd_install() {
   print_banner
   local non_interactive=0
   local arg_agent="" arg_standards="" arg_historic="" arg_adapter=""
+  local arg_language="" arg_doc_language=""
   for arg in "$@"; do
     case "$arg" in
       --non-interactive) non_interactive=1 ;;
@@ -349,6 +357,8 @@ cmd_install() {
       --standards=*)     arg_standards="${arg#--standards=}" ;;
       --historic=*)      arg_historic="${arg#--historic=}" ;;
       --adapter=*)       arg_adapter="${arg#--adapter=}" ;;
+      --language=*)      arg_language="${arg#--language=}" ;;
+      --doc-language=*)  arg_doc_language="${arg#--doc-language=}" ;;
     esac
   done
 
@@ -393,6 +403,19 @@ cmd_install() {
     esac
   fi
   config_set agent "$agent"
+
+  local language doc_language
+  if [ "$non_interactive" -eq 1 ]; then
+    language="${arg_language:-english}"
+    doc_language="${arg_doc_language:-english}"
+  else
+    read -r -p "? Language to interact in (agent replies, skill/persona output)? [english] " language
+    language="${language:-english}"
+    read -r -p "? Language for documentation (code comments, docstrings, READMEs, etc.)? [english] " doc_language
+    doc_language="${doc_language:-english}"
+  fi
+  config_set language "$language"
+  config_set doc_language "$doc_language"
 
   touch "$USER_DIR/standards/company.md" "$USER_DIR/standards/personal.md"
   if [ ! -s "$USER_DIR/standards/company.md" ]; then
@@ -623,6 +646,8 @@ cmd_status() {
   fi
   log "Agent: $(config_get agent || echo 'not configured')"
   log "Historic mode: $(config_get historic_mode || echo 'off')"
+  log "Interaction language: $(config_get language || echo 'english')"
+  log "Documentation language: $(config_get doc_language || echo 'english')"
   local adapters
   adapters="$(config_adapters | tr '\n' ' ')"
   log "Adapters: ${adapters:-none}"
@@ -763,6 +788,7 @@ Usage:
   reins install              First-time setup (interactive wizard)
   reins install --non-interactive --agent=<id> [--standards=yes|no]
                               [--historic=on|off] [--adapter=<path>]
+                              [--language=<lang>] [--doc-language=<lang>]
                              Non-interactive setup, driven by flags
                              (used by `npx reins-method install`)
   reins update                Pull latest core, regenerate agent bridge files

@@ -1,5 +1,5 @@
 ---
-name: party-mode
+name: reins-party-mode
 description: >
   Run a multi-perspective discussion over a task description before proposing a
   breakdown. Michael (Facilitator) picks the relevant persona lenses (always

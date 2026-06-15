@@ -38,6 +38,31 @@ your company's or project's specific conventions and skills.
 
 ---
 
+## What it looks like
+
+```
+you:    Add a password reset endpoint to the API
+
+agent:  Detected stack: ruby (Gemfile) + node (package.json)
+        Loading adapter: acme-rails (matches `ruby`)
+
+        This looks like a new feature. Proposed breakdown:
+          1. POST /password_resets        — request a reset token
+          2. POST /password_resets/:token — consume token, set new password
+          3. Wire up email delivery via existing Mailer
+
+        Architecture decision needed: store reset tokens in the DB or Redis
+        with a TTL? Flagging this before we proceed.
+
+        Create a context file and start on step 1?
+```
+
+The orchestrator instructions live in your AI agent's global config — every
+project you open gets this behavior automatically, with no REINS files added to
+the repo.
+
+---
+
 ## Quick start
 
 ```bash
@@ -50,6 +75,8 @@ menus for:
 - optionally fill in your company/personal coding standards
 - optionally enable Historic Mode (performance tracking)
 - optionally install an adapter pack
+- choose your interaction language (default: English)
+- choose your documentation language (default: English)
 
 Then restart your terminal/agent and run:
 
@@ -160,7 +187,7 @@ proactively. Use the built-in meta-skill to create one:
 reins new-skill my-skill
 ```
 
-or invoke `skill-creator` for guided creation. See [SKILLS.md](SKILLS.md).
+or invoke `reins-skill-creator` for guided creation. See [SKILLS.md](SKILLS.md).
 
 ---
 
@@ -179,10 +206,10 @@ external install:
 | `reins-senior-engineer` | Test-first (red/green/refactor), 100% passing before review, no shortcuts |
 
 Each is callable individually (e.g. "give me the system architect's take on
-this"). Before a breakdown, ask for **`party-mode`** — a facilitator picks the
+this"). Before a breakdown, ask for **`reins-party-mode`** — a facilitator picks the
 relevant personas (always the business analyst) and announces the lineup, each
 speaks in turn, then a synthesizer distills it into what matters for the
-breakdown. Before proposing a commit message, ask for **`code-review`** — it
+breakdown. Before proposing a commit message, ask for **`reins-code-review`** — it
 launches independent subagents (logic, security, and requirements if a SPEC
 exists) for adversarial, parallel review, then closes with a plain-language
 summary of what needs fixing before merge.
@@ -214,6 +241,13 @@ these tools if you choose to install them separately:
   pip install "headroom-ai[all]"
   headroom wrap <agent>
   ```
+  Every session must be started through the wrapper (`headroom wrap claude`
+  instead of `claude`). To avoid typing that every time, alias it in your shell
+  rc file (e.g. `~/.zshrc`):
+  ```bash
+  alias claude="headroom wrap claude"
+  ```
+  This is fully optional — REINS works the same with or without headroom.
 - **[graphify](https://github.com/safishamsi/graphify)** — generates a knowledge
   graph of your codebase (code, docs, SQL, PDFs, images) at `graphify-out/`. REINS's
   orchestrator (`1_orchestrator.md` §2.5) automatically reads
@@ -274,7 +308,7 @@ reins-method/
 │   ├── workflow/        ← 1_orchestrator, 2_new_task, 3_implement, 4_close_task
 │   ├── templates/        ← context, current_task, adapter, skill, spec, plan templates
 │   ├── evaluation/        ← historic mode docs + templates
-│   └── skills/            ← skill-creator, party-mode, code-review,
+│   └── skills/            ← reins-skill-creator, reins-party-mode, reins-code-review,
 │                              reins-business-analyst, reins-technical-writer,
 │                              reins-product-manager, reins-ux-designer,
 │                              reins-system-architect, reins-senior-engineer
@@ -301,7 +335,7 @@ authors — nothing here is a fork or a dependency):
   `specs/<type>_<slug>/step-NN-{spec,plan}.md` and `core/templates/{spec,plan}.md`.
 - **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** — the
   multi-persona "Party Mode" discussion and the adversarial, parallel code-review
-  pattern, reimplemented natively as `party-mode`, `code-review`, and the six
+  pattern, reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six
   `reins-business-analyst`/`reins-technical-writer`/`reins-product-manager`/
   `reins-ux-designer`/`reins-system-architect`/`reins-senior-engineer` persona skills.
 - **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
@@ -312,8 +346,8 @@ authors — nothing here is a fork or a dependency):
   `graphify-out/GRAPH_REPORT.md` output if present (see "Companion tools" above).
 - **[ruflo](https://github.com/ruvnet/ruflo)** — informed thinking on fluid
   interlinking of workflow phases; no dedicated subsystem was added, but it shaped
-  how `1_orchestrator.md` surfaces optional steps (project map, party-mode,
-  code-review) inline in the workflow diagram.
+  how `1_orchestrator.md` surfaces optional steps (project map, reins-party-mode,
+  reins-code-review) inline in the workflow diagram.
 
 ---
 

@@ -26,8 +26,8 @@ reins new-skill my-skill
 ```
 
 This scaffolds `~/.reins/user/skills/my-skill/SKILL.md`. Or, for guided creation, ask
-your agent to use the **skill-creator** meta-skill
-(`~/.reins/core/skills/skill-creator/SKILL.md`) — it will ask what the skill should do,
+your agent to use the **reins-skill-creator** meta-skill
+(`~/.reins/core/skills/reins-skill-creator/SKILL.md`) — it will ask what the skill should do,
 when it should trigger, whether it's read-only, and where it belongs (user vs.
 adapter), then draft the file for your review before writing it.
 

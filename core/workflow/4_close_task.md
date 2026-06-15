@@ -61,7 +61,7 @@ If there is no clear next step, say so explicitly.
 
 ## Optional — Code review
 
-On request, invoke `core/skills/code-review/SKILL.md` against the full diff for this
+On request, invoke `core/skills/reins-code-review/SKILL.md` against the full diff for this
 task before proposing the commit message in Step 5. Its findings are presented to
 the user, who decides whether to address anything before proceeding.
 

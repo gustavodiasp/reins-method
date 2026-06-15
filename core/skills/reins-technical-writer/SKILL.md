@@ -15,7 +15,7 @@ tags: [persona, party-mode, docs]
 - The user asks for a "technical writer" perspective, or to review/restructure a
   SPEC, README, ADR, or API doc for clarity
 - A piece of documentation has grown into a wall of text and needs structure
-- Invoked as part of `core/skills/party-mode/SKILL.md` when docs/spec clarity is the
+- Invoked as part of `core/skills/reins-party-mode/SKILL.md` when docs/spec clarity is the
   concern
 
 ## Context

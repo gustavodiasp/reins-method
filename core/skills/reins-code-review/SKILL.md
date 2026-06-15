@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: reins-code-review
 description: >
   Adversarial, parallel code review using independent subagents — not role-play.
   Michael (Facilitator) announces the session and calls in Dwight (logic/edge-case

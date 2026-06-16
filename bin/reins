@@ -524,6 +524,10 @@ EOF
     log "Adapter '$adapter_name' installed."
   fi
 
+  if command -v npm >/dev/null 2>&1 && [ -f "$REINS_HOME/package.json" ]; then
+    npm install --prefix "$REINS_HOME" --silent --omit=dev 2>/dev/null || true
+  fi
+
   generate_bridges
 
   # Make `reins` available on PATH
@@ -563,6 +567,9 @@ cmd_update() {
     fi
     local new_ref
     new_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
+    if command -v npm >/dev/null 2>&1 && [ -f "$REINS_HOME/package.json" ]; then
+      npm install --prefix "$REINS_HOME" --silent --omit=dev 2>/dev/null || true
+    fi
     if [ "$old_ref" = "$new_ref" ]; then
       log "Already up to date."
     else
@@ -657,7 +664,7 @@ cmd_sync() {
 cmd_agents() {
   # Delegate to Node/clack UI if available; bash wizard otherwise.
   local cli="$REINS_HOME/tools/installer/cli.js"
-  if command -v node >/dev/null 2>&1 && [ -f "$cli" ]; then
+  if command -v node >/dev/null 2>&1 && [ -f "$cli" ] && [ -d "$REINS_HOME/node_modules" ]; then
     node "$cli" agents
     return
   fi

@@ -560,10 +560,16 @@ cmd_update() {
     local old_ref
     old_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
     if ! git -C "$REINS_HOME" pull --ff-only --quiet 2>/dev/null; then
-      err "git pull failed — check your upstream tracking branch:"
-      err "  git -C $REINS_HOME branch --set-upstream-to=<remote>/<branch>"
-      generate_bridges
-      return 1
+      # Fast-forward failed (e.g. after a force push). Try fetch + reset.
+      if git -C "$REINS_HOME" fetch origin --quiet 2>/dev/null && \
+         git -C "$REINS_HOME" reset --hard origin/main --quiet 2>/dev/null; then
+        : # recovered
+      else
+        err "git pull failed — check your upstream tracking branch:"
+        err "  git -C $REINS_HOME branch --set-upstream-to=origin/main"
+        generate_bridges
+        return 1
+      fi
     fi
     local new_ref
     new_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"

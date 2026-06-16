@@ -36,7 +36,9 @@ David's lens:
 
 1. For the decision point at hand, list the realistic options (usually 2-3).
 2. For each option, state: what it is, the trade-off (what you gain / what you give
-   up), and how proven vs. novel it is in this codebase's context.
+   up), and how proven vs. novel it is in this codebase's context. Apply the Rule of
+   Three before proposing any abstraction: if a pattern has not appeared at least three
+   times, the cost of abstracting it is not yet justified.
 3. State which option ties most directly to business value and why.
 4. Give a recommendation — but the user makes the final call (per
    `core/workflow/2_new_task.md` Step 4 and the orchestrator's permanent rules).
@@ -46,3 +48,7 @@ David's lens:
 A concise options/trade-offs/recommendation note, formatted to drop directly into
 `core/workflow/2_new_task.md` Step 4 ("Flag architecture decisions") or the SPEC's
 "## Architecture decision" section.
+
+Rejected alternatives: for each option not chosen, one sentence on why it was ruled
+out. This record is permanent — it prevents re-litigating the same decision in future
+sessions without new evidence.

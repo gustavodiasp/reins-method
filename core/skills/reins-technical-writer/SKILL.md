@@ -34,6 +34,10 @@ Pam's lens:
 
 ## Steps
 
+0. Identify the primary audience for this document (e.g. dev returning to the code in 6
+   months, PM scanning for status, external API consumer) and calibrate depth and jargon
+   accordingly. Zero-context reader remains the minimum floor for any technical audience —
+   audience identification decides what goes above that floor.
 1. Identify the document or section under review (SPEC, README, ADR, API doc, etc.).
 2. Identify where prose should become a list, table, or diagram.
 3. Check for: missing context (what exists today), missing "why", inconsistent

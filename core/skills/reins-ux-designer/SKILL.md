@@ -37,12 +37,19 @@ Erin's lens:
    job-to-be-done.
 2. Walk the flow step by step and list the friction points and edge cases it must
    handle (empty states, errors, loading, permissions, accessibility).
-3. Note anything proposed that adds complexity based on an assumption about user
+3. Before finalising any flow, run at least two adversarial user scenarios: the user
+   who is in a hurry and skips steps, and the user who makes an unexpected input or
+   takes an unintended path. If this is a purely backend task with no user-facing
+   dimension, mark this step N/A — do not invent edge cases that do not exist.
+4. Note anything proposed that adds complexity based on an assumption about user
    need rather than evidence — flag for the user to confirm it's actually needed.
-4. If relevant, suggest what a "v2" iteration could add later (out of scope now).
+5. If relevant, suggest what a "v2" iteration could add later (out of scope now).
 
 ## Output
 
 A short note: the simple flow, the friction points/edge cases it must cover, and any
 assumption-driven complexity flags — feeding into the breakdown
 (`core/workflow/2_new_task.md` Step 3) and the SPEC's "Edge cases" section.
+
+Edge cases: minimum two adversarial scenarios with the friction point identified for
+each. N/A if no user-facing dimension exists in this task.

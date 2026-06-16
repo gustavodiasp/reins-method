@@ -89,7 +89,7 @@ async function runInstall() {
 
   clack.intro('REINS Method setup');
   clack.note(
-    'Use the arrow keys to navigate, Enter to confirm, and Esc or Ctrl+C to cancel at any time.',
+    'Arrow keys to navigate · Space to select/deselect · Enter to confirm · Esc or Ctrl+C to cancel',
     'How to use this menu',
   );
 
@@ -104,11 +104,12 @@ async function runInstall() {
     }
   }
 
-  const agent = await clack.select({
-    message: "What's your primary AI Coding Agent?",
+  const agents = await clack.multiselect({
+    message: 'Which AI coding agents do you use?',
     options: AGENT_OPTIONS,
+    required: true,
   });
-  if (clack.isCancel(agent)) {
+  if (clack.isCancel(agents)) {
     clack.cancel('Install cancelled.');
     process.exit(0);
   }
@@ -164,7 +165,7 @@ async function runInstall() {
   const args = [
     'install',
     '--non-interactive',
-    `--agent=${agent}`,
+    ...agents.map(a => `--agent=${a}`),
     `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
     `--language=${language || 'English'}`,

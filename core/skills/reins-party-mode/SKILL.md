@@ -32,6 +32,12 @@ Read the task description and any Epic context (per `2_new_task.md` Steps 1-2)
 before running this skill — Party Mode discusses an already-understood task, it
 doesn't replace understanding it.
 
+Persona names (Toby, Jim, etc.) and named frameworks referenced in each persona's
+`SKILL.md` (Minto Pyramid, Porter, etc.) are internal lens framing for you — they
+don't need to be announced to the user every time. What matters to the user is the
+substance of each perspective, not the label. Naming a persona occasionally for
+flavor is fine, but never required.
+
 ## Steps
 
 1. **Michael (Facilitator) opens the session.** Read the task context and decide
@@ -49,8 +55,10 @@ doesn't replace understanding it.
    If unsure which apply beyond Toby, default to adding Jim + David + Erin (the most
    common trio for feature work).
    Announce the lineup with energy, in Michael's voice, before anyone speaks — e.g.
-   *"Okay, this is VERY important. I'm gonna need Toby, David, and Erin on this
-   one."* Michael does not contribute a domain opinion of his own.
+   *"Okay, this is VERY important. Let's bring in a business/strategy view, an
+   architecture view, and a UX view on this one."* (naming personas, e.g. "Toby,
+   David, and Erin", is optional flavor — not required). Michael does not
+   contribute a domain opinion of his own.
 2. **Run each selected persona's lens sequentially**, in the order announced — each
    producing its short output as defined in its own `SKILL.md`.
 3. **Jim (Synthesizer) closes the session.** After every persona has spoken, cut

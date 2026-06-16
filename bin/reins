@@ -37,15 +37,15 @@ print_banner() {
 
   printf '%s✓%s REINS installed to ~/.reins/%s\n' "$check" "$text" "$reset"
 
-  local agent bridge_ok=0
-  agent="$(config_get agent)"
-  if [ -n "$agent" ]; then
-    local entry
-    if entry="$(agent_bridge_target "$agent" 2>/dev/null)"; then
-      local bridge="${entry%%:*}"
-      [ -f "$bridge" ] && bridge_ok=1
+  local bridge_ok=0
+  while IFS= read -r _a; do
+    [ -n "$_a" ] || continue
+    local _entry
+    if _entry="$(agent_bridge_target "$_a" 2>/dev/null)"; then
+      local _bridge="${_entry%%:*}"
+      [ -f "$_bridge" ] && bridge_ok=1 && break
     fi
-  fi
+  done < <(config_get_agents)
   if [ "$bridge_ok" -eq 1 ]; then
     printf '%s✓%s Agent bridge configured%s\n' "$check" "$text" "$reset"
   fi
@@ -80,6 +80,36 @@ config_adapters() {
   # prints one adapter name per line, from the "adapters:" YAML list
   [ -f "$CONFIG" ] || return 0
   awk '/^adapters:/{found=1; next} /^[a-zA-Z]/{found=0} found && /^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*/,""); print}' "$CONFIG"
+}
+
+config_get_agents() {
+  # prints one agent id per line; reads "agents:" list, falls back to "agent:" scalar
+  [ -f "$CONFIG" ] || return 0
+  if grep -qE "^agents:" "$CONFIG" 2>/dev/null; then
+    awk '/^agents:/{found=1; next} /^[a-zA-Z]/{found=0} found && /^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*/,""); print}' "$CONFIG"
+  else
+    local a
+    a="$(config_get agent)"
+    [ -n "$a" ] && printf '%s\n' "$a"
+  fi
+}
+
+config_set_agents() {
+  # config_set_agents <agent1> [agent2 ...] -> write agents YAML list, removing old agent/agents entries
+  [ "$#" -gt 0 ] || return 0
+  mkdir -p "$USER_DIR"
+  touch "$CONFIG"
+  awk '
+    /^agents:/ { skip=1; next }
+    /^agent:/  { next }
+    /^[a-zA-Z_]/ { skip=0 }
+    !skip { print }
+  ' "$CONFIG" > "$CONFIG.tmp" && mv "$CONFIG.tmp" "$CONFIG"
+  printf 'agents:\n' >> "$CONFIG"
+  local a
+  for a in "$@"; do
+    printf '  - %s\n' "$a" >> "$CONFIG"
+  done
 }
 
 ensure_managed_block() {
@@ -280,9 +310,9 @@ sync_skills() {
 generate_bridges() {
   # Regenerate ~/.reins/agents/*.md from core + user content, then wire native configs.
   mkdir -p "$AGENTS_DIR"
-  local agent
-  agent="$(config_get agent)"
-  [ -n "$agent" ] || { err "no agent configured — run 'reins install'"; return 1; }
+  local agents_configured
+  agents_configured="$(config_get_agents)"
+  [ -n "$agents_configured" ] || { err "no agents configured — run 'reins install'"; return 1; }
 
   local active_adapters
   active_adapters="$(config_adapters | tr '\n' ' ')"
@@ -349,12 +379,12 @@ EOF
 cmd_install() {
   print_banner
   local non_interactive=0
-  local arg_agent="" arg_standards="" arg_historic="" arg_adapter=""
+  local arg_agents=() arg_standards="" arg_historic="" arg_adapter=""
   local arg_language="" arg_doc_language=""
   for arg in "$@"; do
     case "$arg" in
       --non-interactive) non_interactive=1 ;;
-      --agent=*)         arg_agent="${arg#--agent=}" ;;
+      --agent=*)         arg_agents+=("${arg#--agent=}") ;;
       --standards=*)     arg_standards="${arg#--standards=}" ;;
       --historic=*)      arg_historic="${arg#--historic=}" ;;
       --adapter=*)       arg_adapter="${arg#--adapter=}" ;;
@@ -380,30 +410,38 @@ cmd_install() {
 
   mkdir -p "$USER_DIR"/{standards,adapters,skills,projects,historic}
 
-  local agent
+  local selected_agents=()
   if [ "$non_interactive" -eq 1 ]; then
-    agent="${arg_agent:-other}"
+    if [ "${#arg_agents[@]}" -gt 0 ]; then
+      selected_agents=("${arg_agents[@]}")
+    else
+      selected_agents=("other")
+    fi
   else
-    log "? What's your primary AI Coding Agent?"
-    log "  (REINS wires every agent it detects on this machine automatically — this"
-    log "   choice just sets your default for 'reins status'/'reins doctor'.)"
+    log "? Which AI coding agents do you use?"
+    log "  (REINS wires every agent it detects on this machine automatically.)"
     log "  1) Claude Code"
     log "  2) GitHub Copilot CLI"
     log "  3) Codex CLI"
     log "  4) Gemini CLI"
     log "  5) Aider"
     log "  6) OpenCode / Cursor / Other"
-    read -r -p "Choice [1-6]: " agent_choice
-    case "$agent_choice" in
-      1) agent="claude-code" ;;
-      2) agent="copilot" ;;
-      3) agent="codex" ;;
-      4) agent="gemini" ;;
-      5) agent="aider" ;;
-      *) agent="other" ;;
-    esac
+    read -r -p "Numbers separated by spaces [1]: " agent_choices
+    agent_choices="${agent_choices:-1}"
+    IFS=' ,' read -ra agent_nums <<< "$agent_choices"
+    for num in "${agent_nums[@]}"; do
+      case "$num" in
+        1) selected_agents+=("claude-code") ;;
+        2) selected_agents+=("copilot") ;;
+        3) selected_agents+=("codex") ;;
+        4) selected_agents+=("gemini") ;;
+        5) selected_agents+=("aider") ;;
+        6) selected_agents+=("other") ;;
+      esac
+    done
+    [ "${#selected_agents[@]}" -eq 0 ] && selected_agents=("other")
   fi
-  config_set agent "$agent"
+  config_set_agents "${selected_agents[@]}"
 
   local language doc_language
   if [ "$non_interactive" -eq 1 ]; then
@@ -645,7 +683,9 @@ cmd_status() {
   if [ -f "$REINS_HOME/package.json" ]; then
     log "Version: $(grep -m1 '"version"' "$REINS_HOME/package.json" | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
   fi
-  log "Agent: $(config_get agent || echo 'not configured')"
+  local agents_list
+  agents_list="$(config_get_agents | tr '\n' ' ' | sed 's/ $//')"
+  log "Agents: ${agents_list:-not configured}"
   log "Historic mode: $(config_get historic_mode || echo 'off')"
   log "Interaction language: $(capitalize "$(config_get language || echo 'English')")"
   log "Documentation language: $(capitalize "$(config_get doc_language || echo 'English')")"
@@ -676,24 +716,27 @@ cmd_doctor() {
   [ -d "$CORE_DIR" ] || { err "missing $CORE_DIR"; problems=$((problems+1)); }
   [ -f "$CONFIG" ] || { err "missing $CONFIG — run 'reins install'"; problems=$((problems+1)); }
 
-  local agent
-  agent="$(config_get agent)"
-  if [ -n "$agent" ]; then
-    local entry
-    if entry="$(agent_bridge_target "$agent" 2>/dev/null)"; then
-      local bridge="${entry%%:*}"; local rest="${entry#*:}"
-      local native="${rest%%:*}"
-      [ -f "$bridge" ] || { err "missing bridge file $bridge — run 'reins update'"; problems=$((problems+1)); }
-      if [ -f "$native" ]; then
-        grep -qF "REINS:BEGIN" "$native" || { err "$native is missing the REINS managed block — run 'reins update'"; problems=$((problems+1)); }
-      else
-        err "$native does not exist — run 'reins update'"; problems=$((problems+1))
-      fi
-    else
-      err "unknown agent '$agent' in config"; problems=$((problems+1))
-    fi
+  local configured_agents
+  configured_agents="$(config_get_agents)"
+  if [ -z "$configured_agents" ]; then
+    err "no agents configured — run 'reins install'"; problems=$((problems+1))
   else
-    err "no agent configured — run 'reins install'"; problems=$((problems+1))
+    while IFS= read -r agent; do
+      [ -n "$agent" ] || continue
+      local entry
+      if entry="$(agent_bridge_target "$agent" 2>/dev/null)"; then
+        local bridge="${entry%%:*}"; local rest="${entry#*:}"
+        local native="${rest%%:*}"
+        [ -f "$bridge" ] || { err "missing bridge file $bridge — run 'reins update'"; problems=$((problems+1)); }
+        if [ -f "$native" ]; then
+          grep -qF "REINS:BEGIN" "$native" || { err "$native is missing the REINS managed block — run 'reins update'"; problems=$((problems+1)); }
+        else
+          err "$native does not exist — run 'reins update'"; problems=$((problems+1))
+        fi
+      else
+        err "unknown agent '$agent' in config"; problems=$((problems+1))
+      fi
+    done <<< "$configured_agents"
   fi
 
   while IFS= read -r adapter; do
@@ -782,9 +825,10 @@ REINS Method CLI
 
 Usage:
   reins install              First-time setup (interactive wizard)
-  reins install --non-interactive --agent=<id> [--standards=yes|no]
-                              [--historic=on|off] [--adapter=<path>]
-                              [--language=<lang>] [--doc-language=<lang>]
+  reins install --non-interactive --agent=<id> [--agent=<id> ...]
+                              [--standards=yes|no] [--historic=on|off]
+                              [--adapter=<path>] [--language=<lang>]
+                              [--doc-language=<lang>]
                              Non-interactive setup, driven by flags
                              (used by `npx reins-method install`)
   reins update                Pull latest core, regenerate agent bridge files

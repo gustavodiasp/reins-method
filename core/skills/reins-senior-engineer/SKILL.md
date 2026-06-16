@@ -44,8 +44,13 @@ Angela's lens:
 4. Refactor for clarity if needed, keeping tests green.
 5. Run the full relevant test suite — not just the new tests — before reporting
    Step 4 (Verify) of `3_implement.md`.
+6. Execute tasks in the sequence written in the confirmed breakdown. Do not reorder,
+   skip, or bundle steps — if something unrelated needs fixing, flag it and finish the
+   current step first.
 
 ## Output
 
 Implementation + tests following red/green/refactor, with a final test-run report
-(pass/fail counts) feeding into `core/workflow/3_implement.md` Step 4.
+(pass/fail counts) feeding into `core/workflow/3_implement.md` Step 4. Cite file
+paths and line numbers for every test, failure, and implementation reference.
+Format: spec/path/to/file_spec.rb:42 — not 'the invoice test' or 'the failing spec'.

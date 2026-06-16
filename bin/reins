@@ -655,6 +655,13 @@ cmd_sync() {
 }
 
 cmd_agents() {
+  # Delegate to Node/clack UI if available; bash wizard otherwise.
+  local cli="$REINS_HOME/tools/installer/cli.js"
+  if command -v node >/dev/null 2>&1 && [ -f "$cli" ]; then
+    node "$cli" agents
+    return
+  fi
+  # bash fallback (no Node)
   print_banner
   if [ ! -t 0 ] && [ -e /dev/tty ]; then exec < /dev/tty; fi
   local current
@@ -686,6 +693,19 @@ cmd_agents() {
   config_set_agents "${selected_agents[@]}"
   generate_bridges
   log "Agent selection updated."
+}
+
+cmd_agents_set() {
+  # Internal: called by cli.js after user confirms selection.
+  local selected_agents=()
+  for arg in "$@"; do
+    case "$arg" in
+      --agent=*) selected_agents+=("${arg#--agent=}") ;;
+    esac
+  done
+  [ "${#selected_agents[@]}" -gt 0 ] || { err "no agents specified"; return 1; }
+  config_set_agents "${selected_agents[@]}"
+  generate_bridges
 }
 
 cmd_link_agents() {
@@ -899,6 +919,7 @@ main() {
     new-skill)   cmd_new_skill "$@" ;;
     sync)        cmd_sync "$@" ;;
     agents)      cmd_agents "$@" ;;
+    agents-set)  cmd_agents_set "$@" ;;
     link-agents) cmd_link_agents "$@" ;;
     historic)    cmd_historic "$@" ;;
     status)      cmd_status "$@" ;;

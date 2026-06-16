@@ -69,6 +69,18 @@ function cloneOrPull() {
   fs.chmodSync(path.join(REINS_HOME, 'bin', 'reins'), 0o755);
 }
 
+function readCurrentAgents() {
+  const configPath = path.join(REINS_HOME, 'user', 'config.yaml');
+  if (!fs.existsSync(configPath)) return [];
+  const content = fs.readFileSync(configPath, 'utf8');
+  const agentsBlock = content.match(/^agents:\n((?:[^\S\n]*- .+\n?)*)/m);
+  if (agentsBlock) {
+    return (agentsBlock[1].match(/- (.+)/g) || []).map(s => s.replace(/^- /, '').trim());
+  }
+  const agentScalar = content.match(/^agent:\s*(.+)/m);
+  return agentScalar ? [agentScalar[1].trim()] : [];
+}
+
 const AGENT_OPTIONS = [
   { value: 'claude-code', label: 'Claude Code' },
   { value: 'copilot', label: 'GitHub Copilot CLI' },
@@ -250,4 +262,40 @@ program
   .description('Unhook REINS from your agent/shell, optionally delete ~/.reins')
   .action(() => runDelegated('uninstall', []));
 
+program
+  .command('agents')
+  .description('Update which AI coding agents you use and re-wire')
+  .action(runAgents);
+
 program.parseAsync(process.argv);
+
+async function runAgents() {
+  clack.intro('REINS — update agent selection');
+  clack.note(
+    'Arrow keys to navigate · Space to select/deselect · Enter to confirm · Esc or Ctrl+C to cancel',
+    'How to use this menu',
+  );
+
+  const currentAgents = readCurrentAgents();
+  const initialValues = currentAgents.filter(a => AGENT_OPTIONS.some(o => o.value === a));
+
+  const agents = await clack.multiselect({
+    message: 'Which AI coding agents do you use?',
+    options: AGENT_OPTIONS,
+    initialValues,
+    required: true,
+  });
+  if (clack.isCancel(agents)) {
+    clack.cancel('Cancelled.');
+    process.exit(0);
+  }
+
+  const reinsBin = path.join(REINS_HOME, 'bin', 'reins');
+  const args = ['agents-set', ...agents.map(a => `--agent=${a}`)];
+  try {
+    execFileSync(reinsBin, args, { stdio: 'inherit' });
+  } catch (e) {
+    process.exit(e.status || 1);
+  }
+  clack.outro('Agent selection updated.');
+}

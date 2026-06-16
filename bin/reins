@@ -717,6 +717,38 @@ cmd_agents_set() {
     esac
   done
   [ "${#selected_agents[@]}" -gt 0 ] || { err "no agents specified"; return 1; }
+
+  # Collect native targets of the new selection (to avoid unwiring shared files)
+  local new_natives=""
+  local _a _e _n
+  for _a in "${selected_agents[@]}"; do
+    _e="$(agent_bridge_target "$_a" 2>/dev/null)" || continue
+    _n="${_e#*:}"; _n="${_n%%:*}"
+    new_natives="${new_natives}${_n}"$'\n'
+  done
+
+  # Unwire agents being removed, skip if their native file is still needed
+  while IFS= read -r old_agent; do
+    [ -n "$old_agent" ] || continue
+    _e="$(agent_bridge_target "$old_agent" 2>/dev/null)" || continue
+    _n="${_e#*:}"; _n="${_n%%:*}"
+    printf '%s' "$new_natives" | grep -qxF "$_n" && continue
+    if [ -f "$_n" ] && grep -qF "REINS:BEGIN" "$_n" 2>/dev/null; then
+      remove_managed_block "$_n"
+      local _label
+      case "$old_agent" in
+        claude-code) _label="Claude Code" ;;
+        gemini)      _label="Gemini CLI" ;;
+        copilot)     _label="GitHub Copilot CLI" ;;
+        codex)       _label="Codex CLI" ;;
+        aider)       _label="Aider" ;;
+        opencode)    _label="OpenCode / Cursor" ;;
+        *)           _label="Other" ;;
+      esac
+      log "Unwired: $_label ($_n)"
+    fi
+  done < <(config_get_agents)
+
   config_set_agents "${selected_agents[@]}"
   generate_bridges
 }

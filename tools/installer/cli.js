@@ -193,16 +193,23 @@ async function runInstall() {
     }
   }
 
+  const c = await getColors();
   clack.note(
     [
       `REINS Method installed to ${REINS_HOME}`,
-      'Restart your terminal/agent to activate the `reins` command, then run:',
+      'Restart your terminal/agent to activate the `reins` command,',
+      'or reload your shell right now:',
+      '',
+      '  source ~/.zshrc     # zsh',
+      '  source ~/.bashrc    # bash',
+      '',
+      'Then run:',
       '',
       '  reins status',
       '',
       'Optional companion tools (see README.md "Companion tools"):',
-      '  - headroom: pip install "headroom-ai[all]"',
-      '  - graphify: pip install graphifyy',
+      `  ${c.bold('headroom')}   pip install "headroom-ai[all]"`,
+      `  ${c.bold('graphify')}   pip install graphifyy`,
     ].join('\n'),
     'Done',
   );

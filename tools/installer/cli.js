@@ -270,6 +270,7 @@ program
 program.parseAsync(process.argv);
 
 async function runAgents() {
+  const clack = await getClack();
   clack.intro('REINS — update agent selection');
   clack.note(
     'Arrow keys to navigate · Space to select/deselect · Enter to confirm · Esc or Ctrl+C to cancel',

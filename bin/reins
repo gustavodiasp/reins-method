@@ -555,28 +555,23 @@ cmd_update() {
   if [ -d "$REINS_HOME/.git" ]; then
     local old_ref
     old_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
-    local tmp_err pull_out
-    tmp_err="$(mktemp)"
-    if ! pull_out="$(git -C "$REINS_HOME" pull --ff-only 2>"$tmp_err")"; then
-      err "git pull failed — $(cat "$tmp_err")"
-      rm -f "$tmp_err"
+    if ! git -C "$REINS_HOME" pull --ff-only --quiet 2>/dev/null; then
+      err "git pull failed — check your upstream tracking branch:"
+      err "  git -C $REINS_HOME branch --set-upstream-to=<remote>/<branch>"
       generate_bridges
       return 1
     fi
-    rm -f "$tmp_err"
     local new_ref
     new_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
-    if printf '%s\n' "$pull_out" | grep -q "Already up to date"; then
+    if [ "$old_ref" = "$new_ref" ]; then
       log "Already up to date."
     else
       local old_ver new_ver
       old_ver="$(git -C "$REINS_HOME" tag --points-at "$old_ref" 2>/dev/null | tail -1)"
       new_ver="$(git -C "$REINS_HOME" tag --points-at "$new_ref" 2>/dev/null | tail -1)"
-      old_ver="${old_ver:-$old_ref}"
-      new_ver="${new_ver:-$new_ref}"
-      log "Updated: $old_ver → $new_ver"
+      log "Updated: ${old_ver:-$old_ref} → ${new_ver:-$new_ref}"
       local diff_summary
-      diff_summary="$(printf '%s\n' "$pull_out" | grep -E "file(s)? changed")"
+      diff_summary="$(git -C "$REINS_HOME" diff --stat "$old_ref" "$new_ref" 2>/dev/null | tail -1)"
       [ -n "$diff_summary" ] && log "$diff_summary"
     fi
   else

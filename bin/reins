@@ -348,26 +348,43 @@ skill_frontmatter() {
   ' "$file"
 }
 
-cleanup_claude_skill_links() {
-  local claude_skills="$HOME/.claude/skills"
-  [ -d "$claude_skills" ] || return 0
-  find "$claude_skills" -maxdepth 1 -type l -name 'reins-*' -exec rm -f {} +
+cleanup_skill_links() {
+  # cleanup_skill_links <skills-dir>
+  local skills_dir="$1"
+  [ -d "$skills_dir" ] || return 0
+  find "$skills_dir" -maxdepth 1 -type l -name 'reins-*' -exec rm -f {} +
+}
+
+cleanup_claude_skill_links() { cleanup_skill_links "$HOME/.claude/skills"; }
+
+_sync_skill_symlinks() {
+  # _sync_skill_symlinks <skills-dir> — refreshes reins-* symlinks in the given dir
+  local skills_dir="$1"
+  mkdir -p "$skills_dir"
+  cleanup_skill_links "$skills_dir"
+  while IFS=$'\t' read -r dir reins_name; do
+    [ -n "$dir" ] || continue
+    ln -sf "$dir" "$skills_dir/$reins_name"
+  done < <(collect_skills)
 }
 
 sync_skills() {
-  # Refreshes ~/.claude/skills/reins-* symlinks (if Claude Code is installed) so
-  # Claude Code's native Agent Skills discovery picks up REINS skills directly —
-  # regardless of which agent is configured as primary.
-  cleanup_claude_skill_links
-
-  [ -d "$HOME/.claude" ] || return 0
-
-  local claude_skills="$HOME/.claude/skills"
-  mkdir -p "$claude_skills"
-  while IFS=$'\t' read -r dir reins_name; do
-    [ -n "$dir" ] || continue
-    ln -sf "$dir" "$claude_skills/$reins_name"
-  done < <(collect_skills)
+  # Claude Code — always, if ~/.claude/ exists
+  if [ -d "$HOME/.claude" ]; then
+    _sync_skill_symlinks "$HOME/.claude/skills"
+  fi
+  # GitHub Copilot CLI — skills/ dir in ~/.copilot/
+  if config_get_agents | grep -qx "copilot"; then
+    _sync_skill_symlinks "$HOME/.copilot/skills"
+  fi
+  # Gemini CLI — skills/ dir in ~/.gemini/ (if installed)
+  if config_get_agents | grep -qx "gemini" && [ -d "$HOME/.gemini" ]; then
+    _sync_skill_symlinks "$HOME/.gemini/skills"
+  fi
+  # Codex CLI — skills/ dir in ~/.codex/
+  if config_get_agents | grep -qx "codex"; then
+    _sync_skill_symlinks "$HOME/.codex/skills"
+  fi
 }
 
 generate_bridges() {
@@ -1000,11 +1017,17 @@ cmd_uninstall() {
   # Remove the managed block from every native config REINS may have wired
   unwire_all_agents
 
-  # Remove REINS-managed Claude Code skill symlinks, if any
-  if [ -d "$HOME/.claude/skills" ] && find "$HOME/.claude/skills" -maxdepth 1 -type l -name 'reins-*' -print -quit | grep -q .; then
-    cleanup_claude_skill_links
-    log "Removed REINS skill symlinks from $HOME/.claude/skills"
-  fi
+  # Remove REINS-managed skill symlinks from all agents that use skills/ directories
+  for _skills_dir in \
+      "$HOME/.claude/skills" \
+      "$HOME/.copilot/skills" \
+      "$HOME/.gemini/skills" \
+      "$HOME/.codex/skills"; do
+    if [ -d "$_skills_dir" ] && find "$_skills_dir" -maxdepth 1 -type l -name 'reins-*' -print -quit | grep -q .; then
+      cleanup_skill_links "$_skills_dir"
+      log "Removed REINS skill symlinks from $_skills_dir"
+    fi
+  done
 
   # Remove the /usr/local/bin/reins symlink, if it points into REINS_HOME
   local target_bin="/usr/local/bin/reins"

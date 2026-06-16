@@ -134,7 +134,14 @@ download_and_extract() {
 install_core_files() {
   # install_core_files <src-dir> — overwrites core, bin, tools; never touches user/
   local src="$1"
-  rm -rf "$REINS_HOME/.git" "$CORE_DIR" "$REINS_HOME/bin" "$REINS_HOME/tools"
+  # Remove git metadata and dev-only files from older git-clone installs
+  rm -rf "$REINS_HOME/.git" "$REINS_HOME/.github" "$CORE_DIR" \
+         "$REINS_HOME/bin" "$REINS_HOME/tools"
+  local _dev
+  for _dev in ADAPTERS.md HISTORIC_MODE.md MIGRATION.md README.md SKILLS.md \
+               install.sh LICENSE .gitignore package-lock.json; do
+    rm -f "$REINS_HOME/$_dev"
+  done
   mkdir -p "$REINS_HOME/agents"
   cp -r "$src/core"  "$REINS_HOME/core"
   cp -r "$src/bin"   "$REINS_HOME/bin"

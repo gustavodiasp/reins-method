@@ -134,6 +134,32 @@ Do not skip this step (when historic mode is on) unless I explicitly say to.
 
 ---
 
+### Optional — Mini-retrospective (Historic Mode only)
+
+If historic mode is enabled and a task entry was just written in Step 8, ask the
+user once: *"Do you want to add a quick retro to this entry? (takes ~2 minutes)"*
+
+If yes, ask these three questions one at a time — wait for each answer before
+asking the next:
+
+1. What went well in this task that you want to repeat?
+2. What slowed you down or caused friction?
+3. What would you do differently next time?
+
+Append the answers to the historic entry under a `## Retro` section:
+
+```
+## Retro
+**Went well:** <answer>
+**Friction:** <answer>
+**Next time:** <answer>
+```
+
+If the user says no, or does not respond, skip silently. Never block task closure
+on the retro.
+
+---
+
 ## Step 9 — Close context file and resume
 
 After the PR comments are reviewed and I confirm the task is closed:

@@ -60,6 +60,11 @@ this is the first step. See `core/templates/spec.md` for the structure.
 
 ### Step 3 — Implement
 
+> **Divergence check:** If at any point during implementation the confirmed spec
+> cannot be satisfied as written, or the user signals a mismatch, pause and invoke
+> `core/skills/reins-correct-course/SKILL.md`. Do not continue implementing until
+> the divergence is resolved and the spec is updated.
+
 - Cover the main flow, all listed edge cases, and every listed guarantee
 - Apply the active adapter's standards (or `~/.reins/user/standards/*.md` if no adapter) throughout
 - Do not modify any approved test

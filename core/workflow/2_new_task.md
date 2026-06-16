@@ -23,6 +23,15 @@ Do not assume. If something is unclear, ask before moving on.
 
 ---
 
+## Bugfix — Investigate first
+
+If the task type is `bugfix` (context type `bugfix`, or the user describes broken
+behaviour), invoke `core/skills/reins-investigate/SKILL.md` immediately after Step 1,
+before proposing the breakdown. Do not begin the breakdown (Step 3) until the
+investigation finding is confirmed by the user.
+
+---
+
 ## Step 2 — Understand the Epic (if provided)
 
 If I give you an Epic or broader context, answer:

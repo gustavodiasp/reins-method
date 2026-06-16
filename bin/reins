@@ -176,32 +176,28 @@ wire_block() {
 }
 
 wire_all_agents() {
-  # Wires the REINS managed block into every AI agent detected on this machine
-  # (its config directory already exists), plus the generic ~/AGENTS.md
-  # fallback for Aider/OpenCode/Cursor/other — so skills and instructions are
-  # available no matter which agent you're using, without per-agent installs.
+  # Wires the REINS managed block into the native config of each agent the user
+  # selected during install (config_get_agents). Only configured agents are wired.
   local wired=()
-
-  if [ -d "$HOME/.claude" ]; then
-    wire_block "$AGENTS_DIR/CLAUDE.md" "$HOME/.claude/CLAUDE.md" import
-    wired+=("Claude Code -> $HOME/.claude/CLAUDE.md")
-  fi
-  if [ -d "$HOME/.gemini" ]; then
-    wire_block "$AGENTS_DIR/GEMINI.md" "$HOME/.gemini/GEMINI.md" import
-    wired+=("Gemini CLI -> $HOME/.gemini/GEMINI.md")
-  fi
-  if [ -d "$HOME/.copilot" ]; then
-    wire_block "$AGENTS_DIR/copilot-instructions.md" "$HOME/.copilot/instructions.md" inline
-    wired+=("GitHub Copilot CLI -> $HOME/.copilot/instructions.md")
-  fi
-  if [ -d "$HOME/.codex" ]; then
-    wire_block "$AGENTS_DIR/AGENTS.md" "$HOME/.codex/AGENTS.md" inline
-    wired+=("Codex CLI -> $HOME/.codex/AGENTS.md")
-  fi
-  # Generic fallback — Aider/OpenCode/Cursor/other share a plain ~/AGENTS.md
-  # with no dedicated config directory to detect, so always wire it.
-  wire_block "$AGENTS_DIR/AGENTS.md" "$HOME/AGENTS.md" inline
-  wired+=("Aider / OpenCode / Cursor / other -> $HOME/AGENTS.md")
+  while IFS= read -r _agent; do
+    [ -n "$_agent" ] || continue
+    local _entry
+    _entry="$(agent_bridge_target "$_agent" 2>/dev/null)" || continue
+    local _bridge="${_entry%%:*}" _rest="${_entry#*:}"
+    local _native="${_rest%%:*}" _syntax="${_rest##*:}"
+    local _label
+    case "$_agent" in
+      claude-code) _label="Claude Code" ;;
+      gemini)      _label="Gemini CLI" ;;
+      copilot)     _label="GitHub Copilot CLI" ;;
+      codex)       _label="Codex CLI" ;;
+      aider)       _label="Aider" ;;
+      opencode)    _label="OpenCode / Cursor" ;;
+      *)           _label="Other" ;;
+    esac
+    wire_block "$_bridge" "$_native" "$_syntax"
+    wired+=("$_label -> $_native")
+  done < <(config_get_agents)
 
   local w
   for w in "${wired[@]}"; do
@@ -557,11 +553,31 @@ EOF
 cmd_update() {
   print_banner
   if [ -d "$REINS_HOME/.git" ]; then
-    if ! git -C "$REINS_HOME" pull --ff-only; then
-      err "git pull failed — if this checkout has no upstream tracking branch, run:"
-      err "  git -C $REINS_HOME branch --set-upstream-to=<remote>/<branch>"
+    local old_ref
+    old_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
+    local tmp_err pull_out
+    tmp_err="$(mktemp)"
+    if ! pull_out="$(git -C "$REINS_HOME" pull --ff-only 2>"$tmp_err")"; then
+      err "git pull failed — $(cat "$tmp_err")"
+      rm -f "$tmp_err"
       generate_bridges
       return 1
+    fi
+    rm -f "$tmp_err"
+    local new_ref
+    new_ref="$(git -C "$REINS_HOME" rev-parse --short HEAD)"
+    if printf '%s\n' "$pull_out" | grep -q "Already up to date"; then
+      log "Already up to date."
+    else
+      local old_ver new_ver
+      old_ver="$(git -C "$REINS_HOME" tag --points-at "$old_ref" 2>/dev/null | tail -1)"
+      new_ver="$(git -C "$REINS_HOME" tag --points-at "$new_ref" 2>/dev/null | tail -1)"
+      old_ver="${old_ver:-$old_ref}"
+      new_ver="${new_ver:-$new_ref}"
+      log "Updated: $old_ver → $new_ver"
+      local diff_summary
+      diff_summary="$(printf '%s\n' "$pull_out" | grep -E "file(s)? changed")"
+      [ -n "$diff_summary" ] && log "$diff_summary"
     fi
   else
     die "$REINS_HOME is not a git checkout. Re-run install.sh to update, or 'git init' it manually."
@@ -641,6 +657,40 @@ EOF
 cmd_sync() {
   print_banner
   generate_bridges
+}
+
+cmd_agents() {
+  print_banner
+  if [ ! -t 0 ] && [ -e /dev/tty ]; then exec < /dev/tty; fi
+  local current
+  current="$(config_get_agents | tr '\n' ' ' | sed 's/ $//')"
+  [ -n "$current" ] && log "Current agents: $current"
+  log ""
+  log "? Which AI coding agents do you use?"
+  log "  1) Claude Code"
+  log "  2) GitHub Copilot CLI"
+  log "  3) Codex CLI"
+  log "  4) Gemini CLI"
+  log "  5) Aider"
+  log "  6) OpenCode / Cursor / Other"
+  read -r -p "Numbers separated by spaces [1]: " agent_choices
+  agent_choices="${agent_choices:-1}"
+  IFS=' ,' read -ra agent_nums <<< "$agent_choices"
+  local selected_agents=()
+  for num in "${agent_nums[@]}"; do
+    case "$num" in
+      1) selected_agents+=("claude-code") ;;
+      2) selected_agents+=("copilot") ;;
+      3) selected_agents+=("codex") ;;
+      4) selected_agents+=("gemini") ;;
+      5) selected_agents+=("aider") ;;
+      6) selected_agents+=("other") ;;
+    esac
+  done
+  [ "${#selected_agents[@]}" -eq 0 ] && selected_agents=("other")
+  config_set_agents "${selected_agents[@]}"
+  generate_bridges
+  log "Agent selection updated."
 }
 
 cmd_link_agents() {
@@ -835,6 +885,7 @@ Usage:
   reins new-adapter <name>    Scaffold a new adapter pack
   reins new-skill <name>      Scaffold a new skill
   reins sync                  Regenerate agent bridges + skill registration (no git pull)
+  reins agents                Update which AI agents you use and re-wire
   reins link-agents           Wire any newly-installed AI agents into existing bridges
   reins historic on|off       Enable/disable historic mode
   reins status                Show installed version, agent, adapters, historic mode
@@ -852,6 +903,7 @@ main() {
     new-adapter) cmd_new_adapter "$@" ;;
     new-skill)   cmd_new_skill "$@" ;;
     sync)        cmd_sync "$@" ;;
+    agents)      cmd_agents "$@" ;;
     link-agents) cmd_link_agents "$@" ;;
     historic)    cmd_historic "$@" ;;
     status)      cmd_status "$@" ;;

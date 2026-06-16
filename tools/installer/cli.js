@@ -15,8 +15,11 @@ const { execFileSync } = require('node:child_process');
 const { Command } = require('commander');
 
 const REINS_HOME = process.env.REINS_HOME || path.join(os.homedir(), '.reins');
-const REPO_URL =
-  process.env.REINS_REPO_URL || 'https://github.com/gustavodiasp/reins-method.git';
+const PKG_ROOT   = path.join(__dirname, '../..');
+const LOCAL_BIN  = path.join(PKG_ROOT, 'bin', 'reins');
+const REINS_BIN  = fs.existsSync(path.join(REINS_HOME, 'bin', 'reins'))
+  ? path.join(REINS_HOME, 'bin', 'reins')
+  : LOCAL_BIN;
 
 async function getClack() {
   return import('@clack/prompts');
@@ -46,28 +49,6 @@ async function printBanner() {
   console.log('');
 }
 
-function ensureGit() {
-  try {
-    execFileSync('git', ['--version'], { stdio: 'ignore' });
-  } catch {
-    console.error('Error: git is required.');
-    process.exit(1);
-  }
-}
-
-function cloneOrPull() {
-  if (fs.existsSync(path.join(REINS_HOME, '.git'))) {
-    console.log(`REINS Method already installed at ${REINS_HOME} — pulling latest core...`);
-    execFileSync('git', ['-C', REINS_HOME, 'pull', '--ff-only'], { stdio: 'inherit' });
-  } else if (fs.existsSync(REINS_HOME)) {
-    console.error(`Error: ${REINS_HOME} exists and is not a REINS git checkout. Move it aside first.`);
-    process.exit(1);
-  } else {
-    console.log(`Cloning REINS Method to ${REINS_HOME}...`);
-    execFileSync('git', ['clone', '--depth', '1', REPO_URL, REINS_HOME], { stdio: 'inherit' });
-  }
-  fs.chmodSync(path.join(REINS_HOME, 'bin', 'reins'), 0o755);
-}
 
 function readCurrentAgents() {
   const configPath = path.join(REINS_HOME, 'user', 'config.yaml');
@@ -94,8 +75,6 @@ async function runInstall() {
   const clack = await getClack();
 
   await printBanner();
-  ensureGit();
-  cloneOrPull();
 
   const configPath = path.join(REINS_HOME, 'user', 'config.yaml');
 
@@ -177,6 +156,7 @@ async function runInstall() {
   const args = [
     'install',
     '--non-interactive',
+    `--from-package=${PKG_ROOT}`,
     ...agents.map(a => `--agent=${a}`),
     `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
@@ -188,7 +168,7 @@ async function runInstall() {
   const spinner = clack.spinner();
   spinner.start('Configuring REINS Method');
   try {
-    execFileSync(path.join(REINS_HOME, 'bin', 'reins'), args, { stdio: 'pipe' });
+    execFileSync(LOCAL_BIN, args, { stdio: 'pipe' });
     spinner.stop('Configured REINS Method');
   } catch (e) {
     spinner.stop('Configuration failed');
@@ -235,7 +215,7 @@ function runDelegated(cmd, args) {
     process.exit(1);
   }
   try {
-    execFileSync(path.join(REINS_HOME, 'bin', 'reins'), [cmd, ...args], { stdio: 'inherit' });
+    execFileSync(REINS_BIN, [cmd, ...args], { stdio: 'inherit' });
   } catch (e) {
     process.exit(e.status || 1);
   }
@@ -291,10 +271,9 @@ async function runAgents() {
     process.exit(0);
   }
 
-  const reinsBin = path.join(REINS_HOME, 'bin', 'reins');
   const args = ['agents-set', ...agents.map(a => `--agent=${a}`)];
   try {
-    execFileSync(reinsBin, args, { stdio: 'inherit' });
+    execFileSync(REINS_BIN, args, { stdio: 'inherit' });
   } catch (e) {
     process.exit(e.status || 1);
   }

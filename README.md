@@ -275,6 +275,21 @@ reins doctor                Validate the installation
 reins uninstall             Unhook REINS from your agent/shell, optionally delete ~/.reins
 ```
 
+## Editing your configuration
+
+Your personal files live at `~/.reins/user/` and are never touched by `reins update`.
+To edit them, use:
+
+```
+reins edit standards    Your company and personal code standards
+reins edit adapters     Your adapter packs
+reins edit skills       Your custom skills
+reins edit config       Your REINS configuration
+```
+
+These commands open the relevant file or folder in your `$EDITOR` (defaults to VS Code).
+Run `reins sync` after editing `standards` or `config` to refresh your agent bridges.
+
 ---
 
 ## Supported agents

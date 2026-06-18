@@ -865,6 +865,16 @@ cmd_graphify() {
   log ""
 
   graphify extract "$project_root" --out "$dest_parent" "$@"
+
+  if [ -f "$dest_parent/graphify-out/graph.json" ]; then
+    log ""
+    log "Clustering communities and generating GRAPH_REPORT.md..."
+    graphify cluster-only "$dest_parent" "$@" \
+      && log "" \
+      && log "Done. GRAPH_REPORT.md stored at $dest_parent/graphify-out/GRAPH_REPORT.md" \
+      && log "REINS will pick it up automatically at the next session start." \
+      || log "⚠ cluster-only step failed — run manually: graphify cluster-only $dest_parent"
+  fi
 }
 
 cmd_agents() {

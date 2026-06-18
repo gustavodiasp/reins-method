@@ -660,7 +660,6 @@ EOF
 }
 
 cmd_update() {
-  print_banner
   [ -f "$CONFIG" ] || die "No user config found. Run 'reins install' first."
 
   local reins_source old_version
@@ -691,12 +690,13 @@ cmd_update() {
   sync_skills
   generate_bridges
 
+  print_banner
   if [ "${old_version:-}" = "$new_version" ]; then
     log "Already up to date (v${new_version})."
   else
     log "✓ REINS updated${old_version:+ from v$old_version} to v${new_version}"
   fi
-  log "REINS core updated. ~/.reins/user/ was not touched."
+  log "~/.reins/user/ was not touched."
 }
 
 cmd_new_adapter() {
@@ -768,8 +768,9 @@ EOF
 }
 
 cmd_sync() {
-  print_banner
+  sync_skills
   generate_bridges
+  print_banner
 }
 
 cmd_agents() {

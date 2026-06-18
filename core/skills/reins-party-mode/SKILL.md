@@ -7,16 +7,28 @@ description: >
   (Synthesizer) then distills it all into what matters for the breakdown. Use when
   the user asks to "discuss this first", "party mode", or before breaking down a
   task with real ambiguity or trade-offs.
+allowed-tools: [Agent]
 tags: [party-mode, discussion, meta]
 ---
 
 # Party Mode
 
-A lightweight, native version of BMAD's "Party Mode": instead of installing and
-coordinating separate agents, you (the same agent) sequentially adopt each relevant
-persona's lens — defined in `core/skills/<role>/SKILL.md` — over the task
-description, framed by two roles that control flow but contribute no domain opinion
-of their own: Michael opens the session, Jim closes it.
+A multi-perspective discussion over a task, framed by Michael (Facilitator) and
+closed by Jim (Synthesizer). Each selected persona produces an independent perspective.
+
+**Two modes — use the best one available:**
+
+- **Subagent mode** (preferred): if the Agent tool is available in your runtime,
+  spawn each persona as a real independent subagent. Pass each subagent: the task
+  description, the persona's `SKILL.md` content, and instructions to produce its
+  perspective output. Collect all outputs, then run Jim's synthesis yourself.
+  Announce at start: *"Spawning [N] independent perspectives..."*
+
+- **Sequential mode** (fallback): if the Agent tool is not available, adopt each
+  persona's lens in sequence as the same model. Announce explicitly:
+  *"Running in sequential mode — perspectives are simulated, not independent."*
+
+The rest of this skill applies to both modes.
 
 ## Trigger
 

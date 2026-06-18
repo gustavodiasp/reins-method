@@ -253,7 +253,7 @@ these tools if you choose to install them separately:
   in `~/.reins/user/projects/<slug>/graphify-out/` (not inside the repo) and the
   orchestrator reads it automatically at session start:
   ```bash
-  pip install graphifyy && graphify install
+  brew install pipx && pipx install graphifyy
   # then, in a project:
   reins graphify
   ```

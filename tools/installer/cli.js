@@ -206,7 +206,7 @@ async function runInstall() {
   const c = await getColors();
   const graphifyLine = wantsGraphify
     ? `  ${c.bold('graphify')}   ready — run ${c.bold('reins graphify')} inside any project`
-    : `  ${c.bold('graphify')}   pip install graphifyy  (then: reins graphify)`;
+    : `  ${c.bold('graphify')}   brew install pipx && pipx install graphifyy  (then: reins graphify)`;
   clack.note(
     [
       `REINS Method installed to ${REINS_HOME}`,

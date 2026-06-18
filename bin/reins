@@ -623,32 +623,19 @@ EOF
   fi
 
   local graphify_installed=0
-  local _pip_cmd=""
-  if command -v pip3 >/dev/null 2>&1; then _pip_cmd="pip3"
-  elif command -v pip >/dev/null 2>&1; then _pip_cmd="pip"; fi
   if [ "$non_interactive" -eq 1 ]; then
     if [ "$arg_graphify" = "on" ]; then
-      if [ -n "$_pip_cmd" ]; then
-        log "Installing graphify..."
-        $_pip_cmd install graphifyy && graphify install \
-          && graphify_installed=1 \
-          || log "⚠ graphify installation failed — install manually: pip install graphifyy && graphify install"
-      else
-        log "⚠ pip not found — install graphify manually: pip install graphifyy && graphify install"
-      fi
+      log "Installing graphify..."
+      _install_graphify_dep && graphify_installed=1 \
+        || log "⚠ graphify installation failed — install manually: brew install pipx && pipx install graphifyy"
     fi
   else
     read -r -p "? Install graphify for richer architecture context? [y/N] " yn
     case "$yn" in
       [yY]*)
-        if [ -n "$_pip_cmd" ]; then
-          log "Installing graphify..."
-          $_pip_cmd install graphifyy && graphify install \
-            && graphify_installed=1 \
-            || log "⚠ graphify installation failed — install manually: pip install graphifyy && graphify install"
-        else
-          log "⚠ pip not found — install graphify manually: pip install graphifyy && graphify install"
-        fi
+        log "Installing graphify..."
+        _install_graphify_dep && graphify_installed=1 \
+          || log "⚠ graphify installation failed — install manually: brew install pipx && pipx install graphifyy"
         ;;
     esac
   fi
@@ -692,7 +679,8 @@ EOF
   else
     log "Optional companion tools (see README.md 'Companion tools'):"
     log "  - headroom: token-efficient context compression (pip install \"headroom-ai[all]\")"
-    log "  - graphify: codebase knowledge graph for richer architecture context (pip install graphifyy)"
+    log "  - graphify: codebase knowledge graph for richer architecture context"
+    log "              brew install pipx && pipx install graphifyy  (then: reins graphify)"
   fi
   log ""
   log "Getting started: reins status"
@@ -812,6 +800,28 @@ cmd_sync() {
   print_banner
 }
 
+_install_graphify_dep() {
+  # pipx is the correct way to install Python CLI tools on macOS + Homebrew.
+  # pip --user is the fallback for Linux or systems without pipx.
+  local ok=0
+  if command -v pipx >/dev/null 2>&1; then
+    log "Using pipx (recommended on macOS)..."
+    pipx install graphifyy && ok=1
+  elif command -v pip3 >/dev/null 2>&1; then
+    pip3 install --user graphifyy && ok=1
+  elif command -v pip >/dev/null 2>&1; then
+    pip install --user graphifyy && ok=1
+  else
+    err "Neither pipx nor pip found."
+    err "Install graphify manually: brew install pipx && pipx install graphifyy"
+    return 1
+  fi
+  if [ "$ok" -eq 1 ]; then
+    graphify install 2>/dev/null || true
+  fi
+  return $((1 - ok))
+}
+
 cmd_graphify() {
   local project_root
   if ! project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
@@ -828,17 +838,13 @@ cmd_graphify() {
       read -r -p "graphify is not installed. Install it now? [y/N] " yn
       case "$yn" in
         [yY]*)
-          local _pip
-          if command -v pip3 >/dev/null 2>&1; then _pip="pip3"
-          elif command -v pip >/dev/null 2>&1; then _pip="pip"
-          else die "pip not found — install it first, then run: pip install graphifyy && graphify install"; fi
           log "Installing graphify..."
-          $_pip install graphifyy && graphify install || die "Installation failed."
+          _install_graphify_dep || die "Installation failed."
           ;;
-        *) die "graphify is not installed. Run: pip install graphifyy && graphify install" ;;
+        *) die "graphify is not installed. Run: brew install pipx && pipx install graphifyy" ;;
       esac
     else
-      die "graphify is not installed. Run: pip install graphifyy && graphify install"
+      die "graphify is not installed. Run: brew install pipx && pipx install graphifyy"
     fi
   fi
 

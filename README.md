@@ -231,32 +231,10 @@ self-assessment and check-ins. All data is local and user-owned. See
 
 ## Companion tools (optional)
 
-REINS has no required dependencies, but its workflow is designed to take advantage of
-these tools if you choose to install them separately:
+REINS works without any additional dependencies. Two optional tools integrate with it if you choose to set them up:
 
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
-  compression for AI agents. Wrap your agent to cut context usage without losing
-  comprehension:
-  ```bash
-  pip install "headroom-ai[all]"
-  headroom wrap <agent>
-  ```
-  Every session must be started through the wrapper (`headroom wrap claude`
-  instead of `claude`). To avoid typing that every time, alias it in your shell
-  rc file (e.g. `~/.zshrc`):
-  ```bash
-  alias claude="headroom wrap claude"
-  ```
-  This is fully optional — REINS works the same with or without headroom.
-- **[graphify](https://github.com/safishamsi/graphify)** — generates a knowledge
-  graph of your codebase (code, docs, SQL, PDFs, images). REINS stores the output
-  in `~/.reins/user/projects/<slug>/graphify-out/` (not inside the repo) and the
-  orchestrator reads it automatically at session start:
-  ```bash
-  brew install pipx && pipx install graphifyy
-  # then, in a project:
-  reins graphify
-  ```
+- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context compression for AI agents
+- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph; use `reins graphify` to generate and store it outside the repo
 
 ---
 
@@ -355,11 +333,10 @@ authors — nothing here is a fork or a dependency):
   `reins-business-analyst`/`reins-technical-writer`/`reins-product-manager`/
   `reins-ux-designer`/`reins-system-architect`/`reins-senior-engineer` persona skills.
 - **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
-  compression; documented as an optional companion tool (see "Companion tools"
-  above).
+  compression; listed as an optional companion tool.
 - **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge-graph
-  generation; `reins graphify` wraps it and stores the output in `~/.reins/` so
-  the repo stays clean (see "Companion tools" above).
+  generation; `reins graphify` wraps it and stores output in `~/.reins/` so the
+  repo stays clean.
 - **[ruflo](https://github.com/ruvnet/ruflo)** — informed thinking on fluid
   interlinking of workflow phases; no dedicated subsystem was added, but it shaped
   how `1_orchestrator.md` surfaces optional steps (project map, reins-party-mode,

@@ -34,7 +34,9 @@ Most AI coding workflows end up either:
 REINS Method solves both: a small, **stack-agnostic core** that defines how you and your
 AI agent move through a task (new task → implement → close task, with an optional
 historic/performance-tracking mode), plus **user-owned adapter packs** that teach it
-your company's or project's specific conventions and skills.
+your company's or project's specific conventions and skills. The SPEC-first cycle
+pairs naturally with TDD and STDD workflows — writing tests before implementation is a
+first-class pattern in `3_implement.md`.
 
 ---
 
@@ -69,7 +71,7 @@ the repo.
 npx reins-method@latest install
 ```
 
-This clones REINS Method to `~/.reins/` and runs the setup wizard — arrow-key
+This downloads and installs REINS Method to `~/.reins/` and runs the setup wizard — arrow-key
 menus for:
 - pick your AI agent (Claude Code, GitHub Copilot CLI, Codex CLI, Gemini CLI, Aider, OpenCode, Cursor, other)
 - optionally fill in your company/personal coding standards
@@ -233,8 +235,8 @@ self-assessment and check-ins. All data is local and user-owned. See
 
 REINS works without any additional dependencies. Two optional tools integrate with it if you choose to set them up:
 
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context compression for AI agents
-- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph; use `reins graphify` to generate and store it outside the repo
+- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context compression for AI agents (works best with Claude Code; known Copilot limitations — [#1](https://github.com/gustavodiasp/reins-method/issues/1))
+- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph; use `reins graphify` to generate and store it outside the repo (code-only extraction works without an API key; docs/papers require a separate LLM key — [#2](https://github.com/gustavodiasp/reins-method/issues/2))
 
 ---
 
@@ -260,13 +262,15 @@ Your personal files live at `~/.reins/user/` and are never touched by `reins upd
 To edit them, use:
 
 ```
+reins edit home         Open all of ~/.reins/ in your IDE
 reins edit standards    Your company and personal code standards
 reins edit adapters     Your adapter packs
 reins edit skills       Your custom skills
 reins edit config       Your REINS configuration
 ```
 
-These commands open the relevant file or folder in your `$EDITOR` (defaults to VS Code).
+These commands open the relevant file or folder in your IDE (auto-detects `$EDITOR`,
+VS Code, Cursor, or Zed; shows the path if none is found).
 Run `reins sync` after editing `standards` or `config` to refresh your agent bridges.
 
 ---
@@ -305,7 +309,9 @@ reins-method/
 │   └── skills/            ← reins-skill-creator, reins-party-mode, reins-code-review,
 │                              reins-business-analyst, reins-technical-writer,
 │                              reins-product-manager, reins-ux-designer,
-│                              reins-system-architect, reins-senior-engineer
+│                              reins-system-architect, reins-senior-engineer,
+│                              reins-investigate, reins-correct-course,
+│                              reins-faq, reins-config
 ├── agents/                ← generated bridge file templates
 ├── bin/reins                ← the CLI
 ├── tools/installer/cli.js ← `npx reins-method install` (Node wizard, @clack/prompts)
@@ -332,11 +338,6 @@ authors — nothing here is a fork or a dependency):
   pattern, reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six
   `reins-business-analyst`/`reins-technical-writer`/`reins-product-manager`/
   `reins-ux-designer`/`reins-system-architect`/`reins-senior-engineer` persona skills.
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
-  compression; listed as an optional companion tool.
-- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge-graph
-  generation; `reins graphify` wraps it and stores output in `~/.reins/` so the
-  repo stays clean.
 - **[ruflo](https://github.com/ruvnet/ruflo)** — informed thinking on fluid
   interlinking of workflow phases; no dedicated subsystem was added, but it shaped
   how `1_orchestrator.md` surfaces optional steps (project map, reins-party-mode,

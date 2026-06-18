@@ -460,7 +460,7 @@ cmd_install() {
   print_banner
   local non_interactive=0
   local arg_agents=() arg_standards="" arg_historic="" arg_adapter=""
-  local arg_language="" arg_doc_language="" arg_from_package=""
+  local arg_language="" arg_doc_language="" arg_from_package="" arg_graphify=""
   for arg in "$@"; do
     case "$arg" in
       --non-interactive)  non_interactive=1 ;;
@@ -471,6 +471,7 @@ cmd_install() {
       --language=*)       arg_language="${arg#--language=}" ;;
       --doc-language=*)   arg_doc_language="${arg#--doc-language=}" ;;
       --from-package=*)   arg_from_package="${arg#--from-package=}" ;;
+      --graphify=*)       arg_graphify="${arg#--graphify=}" ;;
     esac
   done
 
@@ -621,6 +622,37 @@ EOF
     log "Adapter '$adapter_name' installed."
   fi
 
+  local graphify_installed=0
+  local _pip_cmd=""
+  if command -v pip3 >/dev/null 2>&1; then _pip_cmd="pip3"
+  elif command -v pip >/dev/null 2>&1; then _pip_cmd="pip"; fi
+  if [ "$non_interactive" -eq 1 ]; then
+    if [ "$arg_graphify" = "on" ]; then
+      if [ -n "$_pip_cmd" ]; then
+        log "Installing graphify..."
+        $_pip_cmd install graphifyy && graphify install \
+          && graphify_installed=1 \
+          || log "⚠ graphify installation failed — install manually: pip install graphifyy && graphify install"
+      else
+        log "⚠ pip not found — install graphify manually: pip install graphifyy && graphify install"
+      fi
+    fi
+  else
+    read -r -p "? Install graphify for richer architecture context? [y/N] " yn
+    case "$yn" in
+      [yY]*)
+        if [ -n "$_pip_cmd" ]; then
+          log "Installing graphify..."
+          $_pip_cmd install graphifyy && graphify install \
+            && graphify_installed=1 \
+            || log "⚠ graphify installation failed — install manually: pip install graphifyy && graphify install"
+        else
+          log "⚠ pip not found — install graphify manually: pip install graphifyy && graphify install"
+        fi
+        ;;
+    esac
+  fi
+
   local _inst_ver
   _inst_ver="$(cat "$REINS_HOME/VERSION" 2>/dev/null)" \
     || _inst_ver="$(grep -m1 '"version"' "$REINS_HOME/package.json" 2>/dev/null \
@@ -652,9 +684,16 @@ EOF
   log "REINS Method installed to $REINS_HOME"
   log "Run: source ~/.zshrc (or restart your terminal) to activate the 'reins' command"
   log ""
-  log "Optional companion tools (see README.md 'Companion tools'):"
-  log "  - headroom: token-efficient context compression (pip install \"headroom-ai[all]\")"
-  log "  - graphify: codebase knowledge graph for richer architecture context (pip install graphifyy)"
+  if [ "$graphify_installed" -eq 1 ]; then
+    log "graphify is ready. Run 'reins graphify' inside any project to generate the architecture map."
+    log ""
+    log "Optional companion tool:"
+    log "  - headroom: token-efficient context compression (pip install \"headroom-ai[all]\")"
+  else
+    log "Optional companion tools (see README.md 'Companion tools'):"
+    log "  - headroom: token-efficient context compression (pip install \"headroom-ai[all]\")"
+    log "  - graphify: codebase knowledge graph for richer architecture context (pip install graphifyy)"
+  fi
   log ""
   log "Getting started: reins status"
 }
@@ -785,9 +824,22 @@ cmd_graphify() {
   local dest="$USER_DIR/projects/$slug/graphify-out"
 
   if ! command -v graphify >/dev/null 2>&1; then
-    err "graphify is not installed."
-    err "Install it with: pip install graphifyy && graphify install"
-    return 1
+    if [ -t 0 ]; then
+      read -r -p "graphify is not installed. Install it now? [y/N] " yn
+      case "$yn" in
+        [yY]*)
+          local _pip
+          if command -v pip3 >/dev/null 2>&1; then _pip="pip3"
+          elif command -v pip >/dev/null 2>&1; then _pip="pip"
+          else die "pip not found — install it first, then run: pip install graphifyy && graphify install"; fi
+          log "Installing graphify..."
+          $_pip install graphifyy && graphify install || die "Installation failed."
+          ;;
+        *) die "graphify is not installed. Run: pip install graphifyy && graphify install" ;;
+      esac
+    else
+      die "graphify is not installed. Run: pip install graphifyy && graphify install"
+    fi
   fi
 
   log "Project: $slug ($project_root)"

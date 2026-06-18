@@ -133,6 +133,15 @@ async function runInstall() {
     process.exit(0);
   }
 
+  const wantsGraphify = await clack.confirm({
+    message: 'Install graphify for richer architecture context? (pip install graphifyy)',
+    initialValue: false,
+  });
+  if (clack.isCancel(wantsGraphify)) {
+    clack.cancel('Install cancelled.');
+    process.exit(0);
+  }
+
   const language = await clack.text({
     message: 'Language to interact in (agent replies, skill/persona output)?',
     placeholder: 'English',
@@ -160,6 +169,7 @@ async function runInstall() {
     ...agents.map(a => `--agent=${a}`),
     `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
+    `--graphify=${wantsGraphify ? 'on' : 'off'}`,
     `--language=${language || 'English'}`,
     `--doc-language=${docLanguage || 'English'}`,
   ];
@@ -194,6 +204,9 @@ async function runInstall() {
   }
 
   const c = await getColors();
+  const graphifyLine = wantsGraphify
+    ? `  ${c.bold('graphify')}   ready — run ${c.bold('reins graphify')} inside any project`
+    : `  ${c.bold('graphify')}   pip install graphifyy  (then: reins graphify)`;
   clack.note(
     [
       `REINS Method installed to ${REINS_HOME}`,
@@ -209,7 +222,7 @@ async function runInstall() {
       '',
       'Optional companion tools (see README.md "Companion tools"):',
       `  ${c.bold('headroom')}   pip install "headroom-ai[all]"`,
-      `  ${c.bold('graphify')}   pip install graphifyy`,
+      graphifyLine,
     ].join('\n'),
     'Done',
   );

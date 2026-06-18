@@ -850,9 +850,6 @@ _install_graphify_dep() {
     err "Install graphify manually: brew install pipx && pipx install graphifyy"
     return 1
   fi
-  if [ "$ok" -eq 1 ]; then
-    graphify install 2>/dev/null || true
-  fi
   return $((1 - ok))
 }
 
@@ -864,8 +861,6 @@ cmd_graphify() {
 
   local slug
   slug="$(basename "$project_root")"
-
-  local dest="$USER_DIR/projects/$slug/graphify-out"
 
   if ! command -v graphify >/dev/null 2>&1; then
     if [ -t 0 ]; then
@@ -891,24 +886,14 @@ cmd_graphify() {
   log "    export OPENAI_API_KEY=<your-key>     → reins graphify --backend openai"
   log ""
 
+  local dest_parent="$USER_DIR/projects/$slug"
+  mkdir -p "$dest_parent"
+
   log "Project: $slug ($project_root)"
-  log "Output:  $dest"
+  log "Output:  $dest_parent/graphify-out"
   log ""
 
-  (cd "$project_root" && graphify . "$@")
-
-  local tmp_out="$project_root/graphify-out"
-  if [ -d "$tmp_out" ]; then
-    mkdir -p "$(dirname "$dest")"
-    rm -rf "$dest"
-    mv "$tmp_out" "$dest"
-    log ""
-    log "Done. GRAPH_REPORT.md stored at $dest/GRAPH_REPORT.md"
-    log "REINS's orchestrator will pick it up automatically at session start."
-  else
-    err "graphify did not produce graphify-out/ — check for errors above."
-    return 1
-  fi
+  graphify extract "$project_root" --out "$dest_parent" "$@"
 }
 
 cmd_agents() {

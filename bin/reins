@@ -773,6 +773,43 @@ cmd_sync() {
   print_banner
 }
 
+cmd_graphify() {
+  local project_root
+  if ! project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    project_root="$(pwd)"
+  fi
+
+  local slug
+  slug="$(basename "$project_root")"
+
+  local dest="$USER_DIR/projects/$slug/graphify-out"
+
+  if ! command -v graphify >/dev/null 2>&1; then
+    err "graphify is not installed."
+    err "Install it with: pip install graphifyy && graphify install"
+    return 1
+  fi
+
+  log "Project: $slug ($project_root)"
+  log "Output:  $dest"
+  log ""
+
+  (cd "$project_root" && graphify .)
+
+  local tmp_out="$project_root/graphify-out"
+  if [ -d "$tmp_out" ]; then
+    mkdir -p "$(dirname "$dest")"
+    rm -rf "$dest"
+    mv "$tmp_out" "$dest"
+    log ""
+    log "Done. GRAPH_REPORT.md stored at $dest/GRAPH_REPORT.md"
+    log "REINS's orchestrator will pick it up automatically at session start."
+  else
+    err "graphify did not produce graphify-out/ — check for errors above."
+    return 1
+  fi
+}
+
 cmd_agents() {
   # Delegate to Node/clack UI if available; bash wizard otherwise.
   local cli="$REINS_HOME/tools/installer/cli.js"
@@ -1102,6 +1139,7 @@ Usage:
   reins link-agents           Wire any newly-installed AI agents into existing bridges
   reins historic on|off       Enable/disable historic mode
   reins status                Show installed version, agent, adapters, historic mode
+  reins graphify              Run graphify and store output in ~/.reins (not the repo)
   reins doctor                Validate the installation
   reins uninstall             Unhook REINS from your agent/shell, optionally delete ~/.reins
 EOF
@@ -1122,6 +1160,7 @@ main() {
     link-agents) cmd_link_agents "$@" ;;
     historic)    cmd_historic "$@" ;;
     status)      cmd_status "$@" ;;
+    graphify)    cmd_graphify "$@" ;;
     doctor)      cmd_doctor "$@" ;;
     uninstall)   cmd_uninstall "$@" ;;
     -h|--help|help|"") usage ;;

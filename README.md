@@ -249,13 +249,13 @@ these tools if you choose to install them separately:
   ```
   This is fully optional — REINS works the same with or without headroom.
 - **[graphify](https://github.com/safishamsi/graphify)** — generates a knowledge
-  graph of your codebase (code, docs, SQL, PDFs, images) at `graphify-out/`. REINS's
-  orchestrator (`1_orchestrator.md` §2.5) automatically reads
-  `graphify-out/GRAPH_REPORT.md` at session start if present:
+  graph of your codebase (code, docs, SQL, PDFs, images). REINS stores the output
+  in `~/.reins/user/projects/<slug>/graphify-out/` (not inside the repo) and the
+  orchestrator reads it automatically at session start:
   ```bash
   pip install graphifyy && graphify install
   # then, in a project:
-  /graphify .
+  reins graphify
   ```
 
 ---
@@ -270,6 +270,7 @@ reins new-skill <name>      Scaffold a new skill
 reins sync                  Regenerate agent bridges + skill registration (no git pull)
 reins link-agents           Wire any newly-installed AI agents into existing bridges
 reins historic on|off       Enable/disable historic mode
+reins graphify              Run graphify and store output in ~/.reins (not the repo)
 reins status                Show installed version, agent, adapters, historic mode
 reins doctor                Validate the installation
 reins uninstall             Unhook REINS from your agent/shell, optionally delete ~/.reins
@@ -357,8 +358,8 @@ authors — nothing here is a fork or a dependency):
   compression; documented as an optional companion tool (see "Companion tools"
   above).
 - **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge-graph
-  generation; the orchestrator (`1_orchestrator.md` §2.5) reads its
-  `graphify-out/GRAPH_REPORT.md` output if present (see "Companion tools" above).
+  generation; `reins graphify` wraps it and stores the output in `~/.reins/` so
+  the repo stays clean (see "Companion tools" above).
 - **[ruflo](https://github.com/ruvnet/ruflo)** — informed thinking on fluid
   interlinking of workflow phases; no dedicated subsystem was added, but it shaped
   how `1_orchestrator.md` surfaces optional steps (project map, reins-party-mode,

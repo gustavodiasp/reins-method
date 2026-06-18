@@ -811,13 +811,26 @@ _open_in_editor() {
     editor="cursor"
   elif command -v zed >/dev/null 2>&1; then
     editor="zed"
+  # macOS app bundle fallbacks — when the IDE is installed but its CLI is not in PATH
+  elif [ -f "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]; then
+    editor="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+  elif [ -f "$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" ]; then
+    editor="$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+  elif [ -f "/Applications/Cursor.app/Contents/Resources/app/bin/cursor" ]; then
+    editor="/Applications/Cursor.app/Contents/Resources/app/bin/cursor"
+  elif [ -f "$HOME/Applications/Cursor.app/Contents/Resources/app/bin/cursor" ]; then
+    editor="$HOME/Applications/Cursor.app/Contents/Resources/app/bin/cursor"
   fi
   if [ -n "$editor" ]; then
     "$editor" "$target"
   else
     log "No editor command found. Open this path in your IDE:"
     log "  $target"
-    log "Or set \$EDITOR in your shell profile (e.g. export EDITOR=code)."
+    log ""
+    log "To fix this permanently, install the shell command for your IDE:"
+    log "  VS Code:  Cmd+Shift+P → 'Shell Command: Install code command in PATH'"
+    log "  Cursor:   Cmd+Shift+P → 'Shell Command: Install cursor command in PATH'"
+    log "Or set \$EDITOR in your shell profile: export EDITOR=code"
   fi
 }
 

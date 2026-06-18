@@ -800,6 +800,27 @@ cmd_sync() {
   print_banner
 }
 
+_open_in_editor() {
+  local target="$1"
+  local editor=""
+  if [ -n "${EDITOR:-}" ] && command -v "$EDITOR" >/dev/null 2>&1; then
+    editor="$EDITOR"
+  elif command -v code >/dev/null 2>&1; then
+    editor="code"
+  elif command -v cursor >/dev/null 2>&1; then
+    editor="cursor"
+  elif command -v zed >/dev/null 2>&1; then
+    editor="zed"
+  fi
+  if [ -n "$editor" ]; then
+    "$editor" "$target"
+  else
+    log "No editor command found. Open this path in your IDE:"
+    log "  $target"
+    log "Or set \$EDITOR in your shell profile (e.g. export EDITOR=code)."
+  fi
+}
+
 _install_graphify_dep() {
   # pipx is the correct way to install Python CLI tools on macOS + Homebrew.
   # pip --user is the fallback for Linux or systems without pipx.
@@ -848,11 +869,29 @@ cmd_graphify() {
     fi
   fi
 
+  # Warn if no LLM key detected and no --backend flag passed — graphify needs
+  # a key for semantic extraction of docs/papers (code-only works without one).
+  if [ "$#" -eq 0 ]; then
+    local _has_key=0
+    for _k in GEMINI_API_KEY GOOGLE_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY MOONSHOT_API_KEY DEEPSEEK_API_KEY; do
+      [ -n "${!_k:-}" ] && _has_key=1 && break
+    done
+    if [ "$_has_key" -eq 0 ]; then
+      log "⚠ No LLM API key detected. graphify needs one to process docs and papers."
+      log "  Pass a backend to use a specific key:"
+      log "    reins graphify --backend claude    (uses ANTHROPIC_API_KEY)"
+      log "    reins graphify --backend openai    (uses OPENAI_API_KEY)"
+      log "    reins graphify --backend gemini    (uses GEMINI_API_KEY)"
+      log "  Or export the key and re-run. Code-only projects work without a key."
+      log ""
+    fi
+  fi
+
   log "Project: $slug ($project_root)"
   log "Output:  $dest"
   log ""
 
-  (cd "$project_root" && graphify .)
+  (cd "$project_root" && graphify . "$@")
 
   local tmp_out="$project_root/graphify-out"
   if [ -d "$tmp_out" ]; then
@@ -956,16 +995,17 @@ cmd_agents_set() {
 
 cmd_edit() {
   local target="${1:-}"
-  local editor="${EDITOR:-code}"
   case "$target" in
-    standards) "$editor" "$USER_DIR/standards/" ;;
-    adapters)  "$editor" "$USER_DIR/adapters/" ;;
-    skills)    "$editor" "$USER_DIR/skills/" ;;
-    historic)  "$editor" "$USER_DIR/historic/" ;;
-    config)    "$editor" "$CONFIG" ;;
+    home)      _open_in_editor "$REINS_HOME" ;;
+    standards) _open_in_editor "$USER_DIR/standards/" ;;
+    adapters)  _open_in_editor "$USER_DIR/adapters/" ;;
+    skills)    _open_in_editor "$USER_DIR/skills/" ;;
+    historic)  _open_in_editor "$USER_DIR/historic/" ;;
+    config)    _open_in_editor "$CONFIG" ;;
     "")
       log "Usage: reins edit <target>"
       log "Targets:"
+      log "  home        Open all of ~/.reins/ in your IDE"
       log "  standards   Your company and personal code standards"
       log "  adapters    Your adapter packs"
       log "  skills      Your custom skills"
@@ -1193,7 +1233,7 @@ Usage:
   reins new-skill <name>      Scaffold a new skill
   reins sync                  Regenerate agent bridges + skill registration (no git pull)
   reins agents                Update which AI agents you use and re-wire
-  reins edit <target>         Open a user config file/folder in \$EDITOR (standards|adapters|skills|historic|config)
+  reins edit <target>         Open a user config file/folder in your IDE (home|standards|adapters|skills|historic|config)
   reins link-agents           Wire any newly-installed AI agents into existing bridges
   reins historic on|off       Enable/disable historic mode
   reins status                Show installed version, agent, adapters, historic mode

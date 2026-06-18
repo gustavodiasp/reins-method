@@ -43,9 +43,9 @@ async function printBanner() {
     console.log(c.green(horse) + c.greenBright(reins));
   }
   console.log('');
-  console.log(c.dim(c.green('  Structured AI pair programming method')));
+  console.log(c.dim(c.green('  Structured AI Pair Programming Method')));
   console.log(c.dim(c.green('  ──────────────────────────────────────────────────')));
-  console.log('  Agent-agnostic · stack-agnostic · globally installed');
+  console.log('  Agent-agnostic · Stack-agnostic · Globally installed');
   console.log('');
 }
 

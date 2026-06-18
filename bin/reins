@@ -30,9 +30,9 @@ print_banner() {
   printf '%s%s%s%s%s\n' "$horse" '          \`   \    ' "$rtxt" '/_/ |_/_____/___/_/ |_//____/' "$reset"
   printf '%s%s%s\n' "$horse" '          `    `' "$reset"
   printf '\n'
-  printf '%s  Structured AI pair programming method%s\n' "$muted" "$reset"
+  printf '%s  Structured AI Pair Programming Method%s\n' "$muted" "$reset"
   printf '%s  ──────────────────────────────────────────────────%s\n' "$muted" "$reset"
-  printf '  Agent-agnostic · stack-agnostic · globally installed\n'
+  printf '  Agent-agnostic · Stack-agnostic · Globally installed\n'
   printf '\n'
 
   printf '%s✓%s REINS installed to ~/.reins/%s\n' "$check" "$text" "$reset"

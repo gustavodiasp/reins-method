@@ -882,23 +882,14 @@ cmd_graphify() {
     fi
   fi
 
-  # Warn if no LLM key detected and no --backend flag passed — graphify needs
-  # a key for semantic extraction of docs/papers (code-only works without one).
-  if [ "$#" -eq 0 ]; then
-    local _has_key=0
-    for _k in GEMINI_API_KEY GOOGLE_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY MOONSHOT_API_KEY DEEPSEEK_API_KEY; do
-      [ -n "${!_k:-}" ] && _has_key=1 && break
-    done
-    if [ "$_has_key" -eq 0 ]; then
-      log "⚠ No LLM API key detected. graphify needs one to process docs and papers."
-      log "  Pass a backend to use a specific key:"
-      log "    reins graphify --backend claude    (uses ANTHROPIC_API_KEY)"
-      log "    reins graphify --backend openai    (uses OPENAI_API_KEY)"
-      log "    reins graphify --backend gemini    (uses GEMINI_API_KEY)"
-      log "  Or export the key and re-run. Code-only projects work without a key."
-      log ""
-    fi
-  fi
+  # Note: graphify uses raw shell env vars (ANTHROPIC_API_KEY, OPENAI_API_KEY,
+  # GEMINI_API_KEY, ...) for semantic extraction of docs and papers — not any
+  # IDE's logged-in session. Projects with code files only work without a key.
+  log "Note: graphify reads API keys from your shell environment, not your IDE session."
+  log "  If your project has docs or papers, export a key before running:"
+  log "    export ANTHROPIC_API_KEY=<your-key>  → reins graphify --backend claude"
+  log "    export OPENAI_API_KEY=<your-key>     → reins graphify --backend openai"
+  log ""
 
   log "Project: $slug ($project_root)"
   log "Output:  $dest"

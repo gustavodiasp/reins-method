@@ -1,4 +1,5 @@
-```
+<div align="center">
+<pre>
       ,~~_              ____  ___________   _______
       |/\ =_ _ ~       / __ \/ ____/  _/ | / / ___/
        _( )_( )\~~    / /_/ / __/  / //  |/ /\__ \
@@ -9,7 +10,8 @@
   Structured AI Pair Programming Method
   ──────────────────────────────────────────────────
   Agent-agnostic · Stack-agnostic · Globally installed
-```
+</pre>
+</div>
 
 <p align="center">
   <a href="#quick-start"><img alt="Install" src="https://img.shields.io/badge/install-npx%20reins--method-orange?style=flat-square"></a>

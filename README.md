@@ -20,23 +20,59 @@
 
 # REINS Method
 
-A universal, agent-agnostic AI pair-programming workflow. Install it once, globally,
-and use it in every project — without ever adding files to a project repository.
+**One install. Every project. Any AI agent.**
+
+A structured, SPEC-first AI pair programming workflow that lives in your home
+directory — never inside your repos — and activates automatically in every
+project you open, with any supported AI agent.
 
 ---
 
-## Why
+## The problem with AI pair programming today
 
-Most AI coding workflows end up either:
-- copy-pasted into every repo (drifts out of sync, leaks into commits), or
-- tightly coupled to one company's stack and conventions (can't be shared or open-sourced)
+Most AI coding setups break down in one of three ways:
 
-REINS Method solves both: a small, **stack-agnostic core** that defines how you and your
-AI agent move through a task (new task → implement → close task, with an optional
-historic/performance-tracking mode), plus **user-owned adapter packs** that teach it
-your company's or project's specific conventions and skills. The SPEC-first cycle
-pairs naturally with TDD and STDD workflows — writing tests before implementation is a
-first-class pattern in `3_implement.md`.
+- **Config drift** — `CLAUDE.md`, `.github/copilot-instructions.md`, `AGENTS.md`
+  scattered across every repo. Out of sync, leaked into commits, duplicated endlessly.
+- **Agent lock-in** — your workflow is tied to one tool. Switching agents means
+  rebuilding your setup from scratch.
+- **No structure** — the agent runs ahead of you. It skips planning, jumps to
+  implementation, and ignores your standards. You spend more time correcting than
+  coding.
+
+REINS solves all three.
+
+---
+
+## What you get
+
+- **Automatic wiring, zero per-project setup** — install once in `~/.reins/` and
+  every project you open gets the full workflow automatically. Nothing is added to
+  your repos.
+- **Truly agent-agnostic** — Claude Code, GitHub Copilot CLI, Gemini CLI, Codex
+  CLI, Aider, OpenCode, Cursor. Switch agents anytime. Your workflow, standards,
+  and task history follow you.
+- **Context that persists across sessions and agents** — active tasks, specs, and
+  decisions are saved between sessions in `~/.reins/user/projects/`. Open a project
+  days later with a different agent and pick up exactly where you left off.
+- **SPEC-first workflow** — the agent proposes a breakdown, flags architecture
+  decisions, and waits for your confirmation before writing a single line of code.
+  You stay in control.
+- **Company + personal standards, properly weighted** — define your team's
+  non-negotiable rules in `company.md` and your personal style in `personal.md`.
+  Both are enforced. Neither overrides the other. Conflicts are caught before they
+  happen.
+- **Built-in expert panel** — six on-demand AI personas (Business Analyst, Product
+  Manager, UX Designer, System Architect, Senior Engineer, Technical Writer) for
+  multi-angle task discussion and adversarial code review. No external tools needed.
+- **Fully customizable** — adapter packs teach REINS your stack's conventions.
+  Custom skills add on-demand procedures. Override any workflow phase without
+  touching the core.
+- **Session reliability** — if your agent drifts mid-session, one skill invocation
+  re-anchors it on your configured standards and workflow. No manual context
+  reconstruction.
+- **Historic mode** — optional monthly tracking of closed tasks for self-assessment
+  and check-ins. All data local and user-owned.
 
 ---
 
@@ -60,8 +96,7 @@ agent:  Detected stack: ruby (Gemfile) + node (package.json)
 ```
 
 The orchestrator instructions live in your AI agent's global config — every
-project you open gets this behavior automatically, with no REINS files added to
-the repo.
+project you open gets this behavior automatically, with no REINS files in the repo.
 
 ---
 
@@ -71,49 +106,42 @@ the repo.
 npx reins-method@latest install
 ```
 
-This downloads and installs REINS Method to `~/.reins/` and runs the setup wizard — arrow-key
-menus for:
-- pick your AI agent (Claude Code, GitHub Copilot CLI, Codex CLI, Gemini CLI, Aider, OpenCode, Cursor, other)
-- optionally fill in your company/personal coding standards
-- optionally enable Historic Mode (performance tracking)
-- optionally install an adapter pack
-- choose your interaction language (default: English)
-- choose your documentation language (default: English)
+The setup wizard guides you through:
+- Pick your AI agent (Claude Code, GitHub Copilot CLI, Codex CLI, Gemini CLI,
+  Aider, OpenCode, Cursor, or other)
+- Set your company and personal coding standards (optional — defaults work out of
+  the box)
+- Enable Historic Mode for performance tracking (optional)
+- Install an adapter pack for your stack (optional)
+- Choose interaction and documentation languages (default: English)
 
-Then restart your terminal/agent and run:
+Restart your terminal/agent, then:
 
 ```bash
 reins status
 ```
 
-Open any project with your AI agent — REINS's orchestrator is now part of its
-instructions and will detect the project's stack automatically.
+Open any project — REINS is already active.
 
-No Node.js? Use the plain bash installer instead — same questions, numbered
-prompts instead of arrow-key menus:
+No Node.js? Use the plain bash installer instead:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/gustavodiasp/reins-method/main/install.sh | bash
 ```
 
-### Where should I install this?
+### Install once, not per project
 
-**Install once, in your home directory — not inside or next to your projects.**
-`reins install` always installs to `~/.reins/`, regardless of where you run it from.
+`reins install` always installs to `~/.reins/`. REINS wires itself into each
+AI agent's *global* config (`~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, etc.),
+so every project you open automatically gets the workflow. One install covers
+every project on the machine, with every supported agent.
 
-There's no need to create a parent folder containing all your projects, and no
-need to install REINS per-project or per-workspace: REINS wires itself into each AI
-agent's *global* config (`~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, etc. — see
-"Supported agents" below), so every project you open with that agent
-automatically gets REINS's orchestrator instructions and stack detection. One
-global install covers every project on the machine, in every supported agent.
+### Why does the installer need Node?
 
-### Why does the installer need Node, if REINS is a bash CLI?
-
-Only the *installer* (`npx reins-method install`) uses Node, for the arrow-key
-menus. Everything you run afterwards — `reins update`, `reins sync`, `reins
-new-adapter`, etc. — is plain bash with no runtime dependencies. No Node? `install.sh`
-runs the same wizard with `read -p` prompts instead of menus.
+Only the *installer* uses Node, for the arrow-key menus. Everything you run
+afterwards — `reins update`, `reins sync`, `reins new-adapter`, etc. — is plain
+bash with no runtime dependencies. No Node? `install.sh` runs the same wizard
+with `read -p` prompts.
 
 ---
 
@@ -121,23 +149,22 @@ runs the same wizard with `read -p` prompts instead of menus.
 
 ```
 ~/.reins/
-├── core/        ← the workflow engine (updated via `reins update`)
-├── user/        ← your config, standards, adapters, skills, project state, historic data
-└── agents/      ← generated bridge files, one per AI agent
+├── core/    ← workflow engine (updated via `reins update`)
+├── user/    ← your config, standards, adapters, skills, project contexts, historic data
+└── agents/  ← generated bridge files, one per AI agent
 ```
 
 - **`core/`** defines the workflow phases: `1_orchestrator.md` (read first every
-  session — detects stack, loads adapters, locates the active task), `2_new_task.md`
-  (understand → breakdown → confirm), `3_implement.md` (SPEC → implement → verify),
-  `4_close_task.md` (summary → commit → optional historic entry → cleanup).
-- **`user/`** is yours. `reins update` never touches it. It holds your standards, your
-  adapters, your custom skills, per-project task contexts/specs, and (optionally)
-  monthly historic records.
-- **`agents/`** holds generated files that each AI agent's native config imports or
-  references — see [agents/README.md](agents/README.md).
+  session — detects stack, loads adapters, locates the active task),
+  `2_new_task.md` (understand → breakdown → confirm), `3_implement.md`
+  (SPEC → implement → verify), `4_close_task.md` (summary → commit → cleanup).
+- **`user/`** is yours. `reins update` never touches it. Holds your standards,
+  adapters, custom skills, per-project task contexts/specs, and optional historic
+  records.
+- **`agents/`** holds the generated files that each AI agent's native config
+  imports or references.
 
-No REINS file is ever written into a project repository. `.gitignore` hacks aren't
-needed because there's nothing to ignore.
+No REINS file is ever written into a project repository.
 
 ---
 
@@ -146,97 +173,115 @@ needed because there's nothing to ignore.
 ```
 New task arrives
       ↓
-2_new_task.md   — understand task & epic, propose breakdown, flag decisions, create context
+Detect stack · load adapter · locate active context
       ↓
-3_implement.md  — SPEC → implement → verify, per confirmed step
-                  (adapters can override this with TDD/SDD-style cycles)
+Understand task · propose breakdown · flag architecture decisions
       ↓
-4_close_task.md — summary, epic impact, commit message, PR review,
-                  optional historic entry, context cleanup
+Wait for your confirmation
+      ↓
+For each confirmed step: SPEC → implement → verify
+      ↓
+Summary · commit message · optional historic entry · context cleanup
 ```
 
-Context files (one per active task, per project) live at
-`~/.reins/user/projects/<project-slug>/contexts/`. See `core/workflow/1_orchestrator.md`
-for the full model, including the "exactly one active context" invariant and the
-multi-component branch guard.
+Task context (one active context per project) persists at
+`~/.reins/user/projects/<project-slug>/contexts/` across sessions and agents.
 
 ---
 
-## Adapters — teaching REINS your stack
+## Standards — three layers, clear responsibilities
 
-An adapter pack is a folder with conventions (`standards/floor.md`), an optional
-override of the implement phase (`workflow/3_implement.md`), and optional on-demand
-skills (`skills/<name>/SKILL.md`). The orchestrator matches an adapter's declared
-`stacks:` against marker files it finds in your project (`Gemfile`, `package.json`,
-`pyproject.toml`, `go.mod`, ...).
+| Layer | File | What goes here |
+|---|---|---|
+| **Adapter floor** | `<adapter>/standards/floor.md` | Stack/framework non-negotiables: framework conventions, tooling, file structure |
+| **Company** | `~/.reins/user/standards/company.md` | Team or project behavioral rules — mandatory: testing philosophy, PR standards, documentation conventions |
+| **Personal** | `~/.reins/user/standards/personal.md` | Your individual style — additive, never overriding company |
+
+Precedence is enforced: adapter floor → company → personal. Conflicts between
+layers are caught before any implementation starts.
+
+**Example:**
+- Company: *"Tests must describe system behavior, not implementation."*
+- Personal: *"Group all expectations for one behavior in a single `it` block
+  using `aggregated_failures`."*
+
+Both applied. No conflict. Both mandatory.
+
+---
+
+## Adapters — teach REINS your stack
+
+An adapter pack adds your stack's non-negotiable conventions (`floor.md`), an
+optional implementation phase override for TDD/SDD cycles, and optional on-demand
+skills.
 
 ```bash
 reins new-adapter my-company
 ```
 
-See [ADAPTERS.md](ADAPTERS.md) for the full contract. Adapters are **user-owned** —
-keep them local, share them privately within your team, or publish them if there's
-nothing proprietary inside.
+The orchestrator matches adapter `stacks:` against marker files in your project
+(`Gemfile` → ruby, `package.json` → node, `pyproject.toml` → python, `go.mod` →
+go, etc.). Multi-stack projects load multiple adapters simultaneously.
+
+Adapters are user-owned — keep them local, share privately within your team, or
+publish them. See [ADAPTERS.md](ADAPTERS.md).
 
 ---
 
 ## Skills — on-demand procedures
 
-Skills are single `SKILL.md` files the agent loads only when relevant — never
-proactively. Use the built-in meta-skill to create one:
+Skills are `SKILL.md` files the agent loads only when invoked — never
+proactively. Each `reins sync` / `reins update` refreshes skill registration
+cleanly (removes stale entries before re-registering), so there is no risk of
+skill duplication across syncs. Create your own with:
 
 ```bash
 reins new-skill my-skill
 ```
 
-or invoke `reins-skill-creator` for guided creation. See [SKILLS.md](SKILLS.md).
+Or invoke `reins-skill-creator` for guided creation. See [SKILLS.md](SKILLS.md).
 
 ---
 
-## Personas, Party Mode & Code Review
+## Expert personas, Party Mode & Code Review
 
-Six built-in persona skills give you BMAD-style perspectives natively, with no
-external install:
+Six built-in persona skills give you a multi-angle expert panel natively:
 
-| Skill | Lens |
+| Skill | Perspective |
 |---|---|
-| `reins-business-analyst` | Methodical, evidence-based (Porter, Minto Pyramid), represents every stakeholder — including the inconvenient ones — never takes sides |
-| `reins-technical-writer` | CommonMark/DITA/OpenAPI, writes for the reader with zero context, diagrams over walls of text |
-| `reins-product-manager` | Jobs-to-be-Done, pragmatic and people-focused, skeptical of complexity that doesn't earn its cost |
-| `reins-ux-designer` | Deeply empathetic, thinks in user flows and friction points, every decision serves a genuine user need |
-| `reins-system-architect` | Calm and strategic, favors proven tech, developer productivity, ties decisions to business value |
-| `reins-senior-engineer` | Test-first (red/green/refactor), 100% passing before review, no shortcuts |
+| `reins-business-analyst` | Methodical, evidence-based — represents every stakeholder, never takes sides |
+| `reins-product-manager` | Jobs-to-be-Done, pragmatic — skeptical of complexity that doesn't earn its cost |
+| `reins-ux-designer` | Deeply empathetic — thinks in user flows and friction points |
+| `reins-system-architect` | Calm and strategic — favors proven tech, ties decisions to business value |
+| `reins-senior-engineer` | Test-first — red/green/refactor, 100% passing before review, no shortcuts |
+| `reins-technical-writer` | CommonMark/DITA/OpenAPI — writes for the reader with zero assumed context |
 
-Each is callable individually (e.g. "give me the system architect's take on
-this"). Before a breakdown, ask for **`reins-party-mode`** — a facilitator picks the
-relevant personas (always the business analyst) and announces the lineup, each
-speaks in turn, then a synthesizer distills it into what matters for the
-breakdown. Before proposing a commit message, ask for **`reins-code-review`** — it
-launches independent subagents (logic, security, and requirements if a SPEC
-exists) for adversarial, parallel review, then closes with a plain-language
-summary of what needs fixing before merge.
+**`reins-party-mode`** — before a breakdown, bring the relevant personas together.
+Each speaks independently, a synthesizer distills what actually matters for your
+decision.
+
+**`reins-code-review`** — before a commit, spawn independent subagents for
+adversarial parallel review (logic, security, requirements). Closes with a
+plain-language summary of what needs fixing before merge.
+
+**`reins-remind`** — if your agent drifts mid-session and stops applying your
+configured standards, invoke this. Output: *"Ops! Let me focus again!"* — the
+agent re-reads your standards and re-anchors on the workflow.
 
 ---
 
-## Historic Mode — optional performance tracking
+## Historic Mode
 
 ```bash
 reins historic on
 ```
 
-Each closed task can leave a short entry in a monthly file under
-`~/.reins/user/historic/`. On request, REINS compiles a Monthly Summary to support
-self-assessment and check-ins. All data is local and user-owned. See
-[HISTORIC_MODE.md](HISTORIC_MODE.md).
-
----
-
-## Companion tools (optional)
-
-REINS works without any additional dependencies. Two optional tools integrate with it if you choose to set them up:
-
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context compression for AI agents (works best with Claude Code; known Copilot limitations — [#1](https://github.com/gustavodiasp/reins-method/issues/1))
-- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph; use `reins graphify` to generate and store it outside the repo (code-only extraction works without an API key; docs/papers require a separate LLM key — [#2](https://github.com/gustavodiasp/reins-method/issues/2))
+When enabled, a hook fires at the end of every closed task and records a short
+entry under `~/.reins/user/historic/`. What you do with that data is entirely
+up to you — track your own velocity, feed it into a review process, build a
+personal knowledge base, or anything else. REINS provides the hook and the
+storage; you decide the purpose. All data is local and user-owned.
+See [HISTORIC_MODE.md](HISTORIC_MODE.md).
 
 ---
 
@@ -244,104 +289,99 @@ REINS works without any additional dependencies. Two optional tools integrate wi
 
 ```
 reins install              First-time setup (interactive wizard)
-reins update                Pull latest core, regenerate agent bridge files
-reins new-adapter <name>    Scaffold a new adapter pack
-reins new-skill <name>      Scaffold a new skill
-reins sync                  Regenerate agent bridges + skill registration (no git pull)
-reins link-agents           Wire any newly-installed AI agents into existing bridges
-reins historic on|off       Enable/disable historic mode
-reins graphify              Run graphify and store output in ~/.reins (not the repo)
-reins status                Show installed version, agent, adapters, historic mode
-reins doctor                Validate the installation
-reins uninstall             Unhook REINS from your agent/shell, optionally delete ~/.reins
+reins update               Pull latest core, regenerate agent bridge files
+reins sync                 Regenerate agent bridges + skill registration (no git pull)
+reins new-adapter <name>   Scaffold a new adapter pack
+reins new-skill <name>     Scaffold a new skill
+reins link-agents          Wire any newly-installed AI agents into existing bridges
+reins historic on|off      Enable/disable historic mode
+reins graphify             Run graphify and store output in ~/.reins (not the repo)
+reins status               Show installed version, agent, adapters, historic mode
+reins doctor               Validate the installation
+reins edit home            Open all of ~/.reins/ in your IDE
+reins edit standards       Your company and personal code standards
+reins edit adapters        Your adapter packs
+reins edit skills          Your custom skills
+reins edit config          Your REINS configuration
+reins uninstall            Unhook REINS from your agent/shell, optionally delete ~/.reins
 ```
-
-## Editing your configuration
-
-Your personal files live at `~/.reins/user/` and are never touched by `reins update`.
-To edit them, use:
-
-```
-reins edit home         Open all of ~/.reins/ in your IDE
-reins edit standards    Your company and personal code standards
-reins edit adapters     Your adapter packs
-reins edit skills       Your custom skills
-reins edit config       Your REINS configuration
-```
-
-These commands open the relevant file or folder in your IDE (auto-detects `$EDITOR`,
-VS Code, Cursor, or Zed; shows the path if none is found).
-Run `reins sync` after editing `standards` or `config` to refresh your agent bridges.
 
 ---
 
 ## Supported agents
 
-REINS doesn't just wire the one agent you pick during `reins install` — every `reins
-update`/`reins sync` run wires **every agent it finds installed on the machine**
-(detected by the presence of that agent's config directory), plus a generic
-`~/AGENTS.md` fallback used by tools without a dedicated config directory:
+During `reins install` you can configure one or more agents at once — pick
+everything you use. Every `reins update` / `reins sync` re-wires all configured
+agents automatically:
 
-| Agent | Bridge mechanism | Detected via |
-|---|---|---|
-| Claude Code | `~/.claude/CLAUDE.md` imports `~/.reins/agents/CLAUDE.md` | `~/.claude/` exists |
-| Gemini CLI | `~/.gemini/GEMINI.md` imports `~/.reins/agents/GEMINI.md` | `~/.gemini/` exists |
-| GitHub Copilot CLI | `~/.copilot/instructions.md` references `~/.reins/agents/copilot-instructions.md` | `~/.copilot/` exists |
-| Codex CLI | `~/.codex/AGENTS.md` references `~/.reins/agents/AGENTS.md` | `~/.codex/` exists |
-| Aider / OpenCode / Cursor / other | `~/AGENTS.md` references `~/.reins/agents/AGENTS.md` | always wired |
+| Agent | Bridge mechanism |
+|---|---|
+| Claude Code | `~/.claude/CLAUDE.md` imports `~/.reins/agents/CLAUDE.md` |
+| Gemini CLI | `~/.gemini/GEMINI.md` imports `~/.reins/agents/GEMINI.md` |
+| GitHub Copilot CLI | `~/.copilot/instructions.md` references `~/.reins/agents/copilot-instructions.md` |
+| Codex CLI | `~/.codex/AGENTS.md` references `~/.reins/agents/AGENTS.md` |
+| Aider / OpenCode / Cursor / other | `~/AGENTS.md` references `~/.reins/agents/AGENTS.md` |
 
-The agent you pick during `reins install` is just your *default* for `reins
-status`/`reins doctor` — it doesn't limit which agents get REINS's instructions.
-If you install a new AI agent later, run `reins link-agents` to wire it in
-without a full `reins update`. Run `reins doctor` to check your default agent's
-bridge is wired correctly.
+The agent you mark as *primary* during setup is used by `reins status` and
+`reins doctor` — it doesn't restrict which agents get the workflow. If you
+install a new agent later, run `reins link-agents` to add it without a full
+`reins update`.
 
 ---
 
-## Project structure (this repo)
+## Your data stays on your machine
 
+Everything inside `~/.reins/user/` — your standards, adapters, skills, task
+contexts, specs, and historic records — lives exclusively on your machine.
+REINS is a local tool: it reads and writes local files, makes no network
+requests, and sends no data anywhere. The authors of REINS have no access to
+any of your configuration or history.
+
+---
+
+## Uninstalling
+
+```bash
+reins uninstall
 ```
-reins-method/
-├── core/
-│   ├── workflow/        ← 1_orchestrator, 2_new_task, 3_implement, 4_close_task
-│   ├── templates/        ← context, current_task, adapter, skill, spec, plan templates
-│   ├── evaluation/        ← historic mode docs + templates
-│   └── skills/            ← reins-skill-creator, reins-party-mode, reins-code-review,
-│                              reins-business-analyst, reins-technical-writer,
-│                              reins-product-manager, reins-ux-designer,
-│                              reins-system-architect, reins-senior-engineer,
-│                              reins-investigate, reins-correct-course,
-│                              reins-faq, reins-config
-├── agents/                ← generated bridge file templates
-├── bin/reins                ← the CLI
-├── tools/installer/cli.js ← `npx reins-method install` (Node wizard, @clack/prompts)
-├── install.sh             ← curl | bash entry point (no Node required)
-├── package.json           ← npm package for the installer (`reins-method`)
-├── ADAPTERS.md
-├── SKILLS.md
-├── HISTORIC_MODE.md
-└── MIGRATION.md
-```
+
+This unwires REINS from all configured agents and removes the CLI. By default,
+`~/.reins/` is left intact — your standards, adapters, skills, and project
+contexts are preserved. If you choose to delete `~/.reins/`, you are offered
+the option to back up your `user/` folder first.
+
+---
+
+## Companion tools (optional)
+
+REINS works without additional dependencies. Two optional tools integrate with it
+if you choose to set them up:
+
+- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
+  compression for AI agents (works best with Claude Code; known Copilot limitations
+  — [#1](https://github.com/gustavodiasp/reins-method/issues/1))
+- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph;
+  use `reins graphify` to generate and store it outside the repo (code-only
+  extraction works without an API key; docs/papers require a separate LLM key
+  — [#2](https://github.com/gustavodiasp/reins-method/issues/2))
 
 ---
 
 ## Inspiration
 
-REINS Method's design borrows specific ideas from these projects (full credit to their
-authors — nothing here is a fork or a dependency):
+REINS borrows specific ideas from these projects — full credit to their authors,
+nothing here is a fork or a dependency:
 
 - **[spec-kit](https://github.com/github/spec-kit)** (GitHub) — the per-feature
   `specs/<feature>/{spec,plan}.md` artifact separation that shaped
-  `specs/<type>_<slug>/step-NN-{spec,plan}.md` and `core/templates/{spec,plan}.md`.
+  `specs/<type>_<slug>/step-NN-{spec,plan}.md` and the spec/plan templates.
 - **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** — the
-  multi-persona "Party Mode" discussion and the adversarial, parallel code-review
-  pattern, reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six
-  `reins-business-analyst`/`reins-technical-writer`/`reins-product-manager`/
-  `reins-ux-designer`/`reins-system-architect`/`reins-senior-engineer` persona skills.
+  multi-persona discussion and adversarial parallel code-review pattern,
+  reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six
+  persona skills.
 - **[ruflo](https://github.com/ruvnet/ruflo)** — informed thinking on fluid
-  interlinking of workflow phases; no dedicated subsystem was added, but it shaped
-  how `1_orchestrator.md` surfaces optional steps (project map, reins-party-mode,
-  reins-code-review) inline in the workflow diagram.
+  interlinking of workflow phases; shaped how `1_orchestrator.md` surfaces optional
+  steps inline in the workflow diagram.
 
 ---
 

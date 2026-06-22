@@ -554,26 +554,41 @@ cmd_install() {
     cat > "$USER_DIR/standards/company.md" <<'EOF'
 ---
 scope: always
-precedence: 1 # floor — non-negotiable
+precedence: 1 # mandatory — applied before personal standards
 ---
 
 # Company / Project Standards
 
-Fill this in with the non-negotiable conventions for your company or project.
-This file is read by the orchestrator on every session.
+Mandatory conventions for your team or project — non-negotiable, applied on
+every session regardless of personal preferences.
+
+What belongs here: testing philosophy, code review rules, documentation
+conventions, branch/PR standards — anything the whole team must follow.
+
+What does NOT belong here: stack/framework setup (→ adapter floor.md),
+personal style preferences (→ personal.md).
+
 EOF
   fi
   if [ ! -s "$USER_DIR/standards/personal.md" ]; then
     cat > "$USER_DIR/standards/personal.md" <<'EOF'
 ---
 scope: always
-precedence: 2 # personal style — must never conflict with company.md
+precedence: 2 # additive — must never conflict with company.md
 ---
 
 # Personal Standards
 
-Fill this in with your personal style preferences on top of company.md.
-If anything here conflicts with company.md, the orchestrator will stop and ask.
+Your individual style preferences, applied on top of company.md. Also
+mandatory for the agent to follow, but must never contradict company.md.
+If a conflict is detected, the orchestrator will stop and ask you to resolve it.
+
+What belongs here: conventions that refine or extend company standards —
+additive, never replacing or weakening them.
+
+What does NOT belong here: rules that override company.md, stack configuration,
+or anything a colleague should also follow (→ company.md).
+
 EOF
   fi
   if [ "$non_interactive" -eq 1 ]; then
@@ -717,12 +732,20 @@ EOF
   cat > "$dir/standards/floor.md" <<'EOF'
 ---
 scope: always
-precedence: 1 # floor — non-negotiable
+precedence: 1 # floor — non-negotiable, applied before company and personal standards
 ---
 
 # Standards — Floor
 
-Non-negotiable conventions for this stack.
+Non-negotiable technical conventions for this stack, set by the adapter.
+Applied before company.md and personal.md.
+
+What belongs here: framework conventions, file structure rules, library
+choices, tooling requirements — anything the stack mandates.
+
+What does NOT belong here: team behavioral rules (→ company.md) or
+personal style preferences (→ personal.md).
+
 EOF
   log "Adapter scaffolded at $dir"
   log "Edit ADAPTER.md (set 'stacks'), then standards/floor.md."

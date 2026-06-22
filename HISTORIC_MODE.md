@@ -1,11 +1,11 @@
 # Historic Mode
 
-Optional, off by default. Turns each closed task into a short entry in a monthly
-file, and compiles a summary on request — useful for self-assessment and
-performance check-ins.
+Optional, off by default. Records a short entry for every closed task and stores
+it locally under `~/.reins/user/historic/`. What you do with that data is entirely
+up to you.
 
-All data is **user-owned** and lives at `~/.reins/user/historic/` — never inside a
-project repo, never touched by `reins update`.
+All data is **user-owned** and lives on your machine — never inside a project repo,
+never touched by `reins update`.
 
 ---
 
@@ -23,12 +23,10 @@ reins historic off   # stops recording new entries; existing data is kept
 - `core/workflow/4_close_task.md` Step 8 records a short entry for every closed task:
   type, context, what was done, impact, and (optionally) a 0–10 difficulty rating
   across size/complexity/impact.
-- Entries accumulate in `~/.reins/user/historic/YYYY-MM.md`, one file per month, created
-  from `core/evaluation/templates/monthly.md`.
-- On request ("generate monthly summary" / `reins historic summary`), the agent compiles
-  the month's entries — optionally enriched with PR/commit metrics from available
-  tooling — into a summary covering deliveries, progress against priorities, impact,
-  skills demonstrated, and a one-line takeaway.
+- Entries accumulate in `~/.reins/user/historic/YYYY-MM.md`, organized by month.
+- On request (`reins historic summary`), the agent compiles the entries for a period —
+  optionally enriched with PR/commit metrics from available tooling — into a summary
+  covering deliveries, impact, and skills demonstrated.
 
 ---
 

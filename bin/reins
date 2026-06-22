@@ -5,6 +5,10 @@
 set -euo pipefail
 
 REINS_HOME="${REINS_HOME:-$HOME/.reins}"
+case "$REINS_HOME" in
+  "$HOME"/*|"$HOME") ;;
+  *) printf 'Error: REINS_HOME must be under $HOME (got: %s)\n' "$REINS_HOME" >&2; exit 1 ;;
+esac
 CORE_DIR="$REINS_HOME/core"
 USER_DIR="$REINS_HOME/user"
 AGENTS_DIR="$REINS_HOME/agents"
@@ -18,6 +22,25 @@ log()  { printf '%s\n' "$*"; }
 err()  { printf 'Error: %s\n' "$*" >&2; }
 die()  { err "$*"; exit 1; }
 capitalize() { printf '%s%s' "$(printf '%s' "${1:0:1}" | tr '[:lower:]' '[:upper:]')" "${1:1}"; }
+
+_compute_project_slug() {
+  # _compute_project_slug <project-root>
+  # Uses basename by default. Falls back to a sanitized full path only when
+  # a different project already owns that basename (collision detected via
+  # the .reins-project marker file).
+  local root="$1"
+  local slug
+  slug="$(basename "$root")"
+  local path_file="$USER_DIR/projects/$slug/.reins-project"
+  if [ -f "$path_file" ]; then
+    local stored
+    stored="$(cat "$path_file" 2>/dev/null)"
+    if [ -n "$stored" ] && [ "$stored" != "$root" ]; then
+      slug="$(printf '%s' "$root" | tr '/' '-' | sed 's/^-//')"
+    fi
+  fi
+  printf '%s\n' "$slug"
+}
 
 print_banner() {
   local horse=$'\033[32m' rtxt=$'\033[92m' muted=$'\033[2;32m'
@@ -482,6 +505,7 @@ cmd_install() {
     log "Downloading REINS Method..."
     local _extracted
     _extracted="$(download_and_extract "$reins_source")"
+    [ -n "$_extracted" ] || die "Failed to extract REINS archive"
     install_core_files "$_extracted"
     rm -rf "$(dirname "$_extracted")"
   fi
@@ -683,6 +707,7 @@ cmd_update() {
   log "Downloading update..."
   local _extracted
   _extracted="$(download_and_extract "$reins_source")"
+  [ -n "$_extracted" ] || die "Failed to extract REINS archive"
 
   local new_version
   new_version="$(cat "$_extracted/VERSION" 2>/dev/null)" \
@@ -854,7 +879,7 @@ cmd_graphify() {
   fi
 
   local slug
-  slug="$(basename "$project_root")"
+  slug="$(_compute_project_slug "$project_root")"
 
   if ! command -v graphify >/dev/null 2>&1; then
     if [ -t 0 ]; then
@@ -882,6 +907,7 @@ cmd_graphify() {
 
   local dest_parent="$USER_DIR/projects/$slug"
   mkdir -p "$dest_parent"
+  printf '%s\n' "$project_root" > "$dest_parent/.reins-project"
 
   log "Project: $slug ($project_root)"
   log "Output:  $dest_parent/graphify-out"
@@ -1072,7 +1098,7 @@ cmd_status() {
 
   if git rev-parse --show-toplevel >/dev/null 2>&1; then
     local slug
-    slug="$(basename "$(git rev-parse --show-toplevel)")"
+    slug="$(_compute_project_slug "$(git rev-parse --show-toplevel)")"
     local ctx_dir="$USER_DIR/projects/$slug/contexts"
     if [ -d "$ctx_dir" ]; then
       local active

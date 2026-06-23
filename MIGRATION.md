@@ -45,16 +45,16 @@ To migrate:
 
 ### 2. Personal evaluation data → `~/.reins/user/historic/`
 
-The old `core/evaluation/monthly/*.md` files (2025-11 through 2026-06) contain real
+The old `core/historic/monthly/*.md` files (2025-11 through 2026-06) contain real
 performance-review content. Move them as-is to `~/.reins/user/historic/`:
 
 ```bash
 mkdir -p ~/.reins/user/historic
-mv core/evaluation/monthly/*.md ~/.reins/user/historic/
+mv core/historic/monthly/*.md ~/.reins/user/historic/
 reins historic on
 ```
 
-Then remove `core/evaluation/monthly/` from this repo (already done in Phase 1 — this
+Then remove `core/historic/monthly/` from this repo (already done in Phase 1 — this
 repo only ships empty templates now).
 
 ### 3. Active project contexts/specs → `~/.reins/user/projects/<project-slug>/`

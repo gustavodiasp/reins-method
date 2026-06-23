@@ -20,13 +20,12 @@ reins historic off   # stops recording new entries; existing data is kept
 
 ## What happens when it's on
 
-- `core/workflow/4_close_task.md` Step 8 records a short entry for every closed task:
-  type, context, what was done, impact, and (optionally) a 0–10 difficulty rating
-  across size/complexity/impact.
-- Entries accumulate in `~/.reins/user/historic/YYYY-MM.md`, organized by month.
-- On request (`reins historic summary`), the agent compiles the entries for a period —
-  optionally enriched with PR/commit metrics from available tooling — into a summary
-  covering deliveries, impact, and skills demonstrated.
+- `core/workflow/4_close_task.md` Step 8 fires at every task close and records an entry
+  in `~/.reins/user/historic/` using whatever structure you have defined there.
+- If no structure exists yet, the agent asks how you want to organize the entry before
+  proceeding — file layout, naming, and format are entirely your choice.
+- On request (`reins historic summary`), the agent reads what you have stored and
+  produces a summary in the same terms you use.
 
 ---
 

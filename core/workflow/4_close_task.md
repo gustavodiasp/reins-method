@@ -124,11 +124,13 @@ Do not act on any comment before I confirm which ones to address. Comments marke
 
 Check `~/.reins/user/config.yaml` for `historic_mode: on`. If it is off, skip this step entirely.
 
-If on, follow `~/.reins/core/evaluation/README.md` (Mode A — record task entry at close), using:
-- `~/.reins/core/evaluation/templates/monthly.md` to create the current month's file if it doesn't exist
-- `~/.reins/core/evaluation/templates/task-entry.md` to build the entry
+If on:
 
-This step runs while the task context is still active — that context is the source of data for the entry.
+1. Check `~/.reins/user/historic/` for any existing files or a user-defined template. If the user has established a structure (their own file layout, naming convention, or template), follow it exactly.
+2. If no structure exists yet, ask the user: how do you want to organize this entry — what file, what format, what data?
+3. Record the entry as the user specifies, using the task context (still active at this point) as the data source.
+
+Do not impose any file structure, naming convention, or template. The organization of `~/.reins/user/historic/` is entirely the user's choice.
 
 Do not skip this step (when historic mode is on) unless I explicitly say to.
 
@@ -146,14 +148,8 @@ asking the next:
 2. What slowed you down or caused friction?
 3. What would you do differently next time?
 
-Append the answers to the historic entry under a `## Retro` section:
-
-```
-## Retro
-**Went well:** <answer>
-**Friction:** <answer>
-**Next time:** <answer>
-```
+Append the answers to the historic entry in whatever format fits the user's
+established structure. If no structure exists, use a simple `## Retro` section.
 
 If the user says no, or does not respond, skip silently. Never block task closure
 on the retro.
@@ -190,3 +186,4 @@ After the PR comments are reviewed and I confirm the task is closed:
 - Do not mark a comment as valid solely because it follows a general best practice — evaluate it against the specific decisions made in this task
 - Do not delete the context file before I explicitly confirm the task is closed
 - Do not skip the historic entry step (Step 8) when historic mode is on — it must run before context cleanup
+- Do not impose any file structure or template on the user's `~/.reins/user/historic/` — follow what the user has defined, or ask

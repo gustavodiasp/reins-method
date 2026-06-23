@@ -1,134 +1,34 @@
-# Historic Mode
+# Historic Mode — Reference
 
-Historic Mode turns daily work into a clear, evidence-based record of monthly progress.
-It is **optional** — enable it with `reins historic on`. All data it produces is
-**user-owned** and lives at `~/.reins/user/historic/`, never inside a project repo and
-never touched by `reins update`.
-
----
-
-## Purpose
-
-Each closed task leaves a short, objective trace. At the end of a period (or before a
-performance check-in / 1:1), that trace is compiled into a **Monthly Summary** that
-supports self-assessment and the conversation with a manager or lead. It typically
-helps answer questions like:
-
-1. What were the priorities for this period?
-2. What progress was made on previous priorities?
-3. What are the expectations/priorities for the upcoming period?
-4. What support is needed?
-5. How can strengths be leveraged further?
-6. How is performance overall?
+This directory contains **example** templates for organizing historic task entries.
+They are not mandatory. The structure of `~/.reins/user/historic/` is entirely
+user-defined — REINS does not impose any file layout, naming convention, or format.
 
 ---
 
-## Structure
+## What historic mode does
 
-```text
-~/.reins/user/historic/
-└── YYYY-MM.md          ← one file per month
-```
-
-Templates used to create these files live at:
-```
-~/.reins/core/evaluation/templates/
-├── monthly.md           ← empty monthly file template
-└── task-entry.md        ← empty task entry template
-```
+When `historic_mode: on`, a hook fires at the end of every closed task (`4_close_task.md`
+Step 8). The agent records an entry based on whatever structure the user has defined in
+`~/.reins/user/historic/`. If no structure exists yet, the agent asks the user how they
+want to organize the entry before proceeding.
 
 ---
 
-## Mode A — Record task entry at close
+## Example templates (optional)
 
-**When:** invoked automatically from `core/workflow/4_close_task.md` Step 8, when
-historic mode is on.
+`templates/monthly.md` and `templates/task-entry.md` are one possible way to organize
+entries — by month, with task metadata and an optional retro section. Use them, adapt
+them, or ignore them entirely.
 
-### Step 1 — Identify the target month
-
-Use today's date to determine `YYYY-MM`.
-
-### Step 2 — Open or create the monthly file
-
-- Check if `~/.reins/user/historic/YYYY-MM.md` exists.
-- If it does **not** exist:
-  - Create it from `core/evaluation/templates/monthly.md`.
-  - Fill in the header (period, month).
-  - **Ask the user to fill in the priorities and "punch back" sections** before proceeding — these set the context for the whole period.
-- If it already exists: open it.
-
-### Step 3 — Check for duplicates
-
-Before adding an entry, verify the task/PR/branch is not already recorded in the
-"Task entries" section. Dedupe key: branch name, PR number, or task title. If a
-duplicate is found, skip and inform the user.
-
-### Step 4 — Enrich with available tooling (optional)
-
-If a GitHub (or equivalent) MCP/CLI tool is available, fetch from the PR associated
-with this task: PR number, title, URL, state, merged date, files changed,
-additions/deletions, commit count, and review comment themes (summarized, not
-transcribed verbatim). If unavailable, proceed without it — do not block the entry.
-
-### Step 5 — Build the entry
-
-Use `core/evaluation/templates/task-entry.md` as the structure. Fill in date, title,
-type, context, what was done, and impact from the task summary (`4_close_task.md`
-Step 2). Ask the user for the difficulty dimensions and any notes worth highlighting
-at the next check-in.
-
-### Step 6 — Insert the entry
-
-Append the entry to the "Task entries" section of the monthly file, in chronological
-order.
-
-### Step 7 — Done
-
-Confirm the entry was added. Show the entry title and the file path.
+To use an example template as your starting point, copy it to
+`~/.reins/user/historic/` and adjust it to your needs. Once a structure exists there,
+the agent will follow it on every subsequent task close.
 
 ---
 
-## Mode B — Monthly summary (`reins historic summary`)
+## `reins historic summary`
 
-Generated only when explicitly requested. The agent reads the entries for the
-specified month, optionally enriches with PR/commit metrics from available tooling,
-and produces a summary covering: main deliveries, progress against priorities,
-impact, skills demonstrated, evolution signals, areas to improve, and a one-line
-takeaway.
-
----
-
-## Rules
-
-- **One file per period** — `historic/YYYY-MM.md`
-- **Record at close, not at the end of the period** — don't let entries pile up
-- **Summary only on request** — never generated automatically
-- **Enrichment is additive, never blocking** — if data isn't available, the entry still gets recorded
-- **No duplicates** — dedupe key: branch / PR / date
-
----
-
-## Difficulty scale (0–10, optional)
-
-Each entry can optionally rate three dimensions:
-
-| Dimension | What it measures |
-|---|---|
-| **Size** | Volume of work / effort |
-| **Complexity** | Technical difficulty / ambiguity |
-| **Impact** | Importance of the result / risk / relevance |
-
-| Score | Reading |
-|---|---|
-| 0–2 | Very simple, direct execution |
-| 3–4 | Simple, with some context |
-| 5–6 | Intermediate, required analysis or coordination |
-| 7–8 | Complex, significant risk or ambiguity |
-| 9–10 | Exceptionally demanding or critical |
-
----
-
-## Guiding principle
-
-This system isn't about "looking productive". It exists to make real work, real
-growth, and real needs visible — to the user themselves, first.
+On request, the agent reads whatever is in `~/.reins/user/historic/` and produces a
+summary. The content and format of the summary follow what the user has stored there —
+no fixed schema is assumed.

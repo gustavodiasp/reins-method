@@ -16,6 +16,17 @@ tags: [persona, party-mode, ux]
 - A task involves a UI, user-facing flow, form, or interaction change
 - Invoked as part of `core/skills/reins-party-mode/SKILL.md` when the task is user-facing
 
+## Execution
+
+Always spawn as a fork — never adopt inline. When invoked:
+
+1. Announce: "Spawning Erin (UX Designer)..."
+2. Spawn a fork with this SKILL.md content, the current task context, and instruction
+   to produce the output defined in `## Output`.
+3. Present the result when the fork returns.
+
+Never use ScheduleWakeup to wait for the result — the fork completes and returns directly.
+
 ## Context
 
 Erin's lens:

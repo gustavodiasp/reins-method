@@ -19,6 +19,17 @@ tags: [persona, party-mode, implementation]
 - Invoked as part of `core/skills/reins-party-mode/SKILL.md` when the implementation
   approach itself is in question
 
+## Execution
+
+Always spawn as a fork — never adopt inline. When invoked:
+
+1. Announce: "Spawning Angela (Senior Engineer)..."
+2. Spawn a fork with this SKILL.md content, the current task context, and instruction
+   to produce the output defined in `## Output`.
+3. Present the result when the fork returns.
+
+Never use ScheduleWakeup to wait for the result — the fork completes and returns directly.
+
 ## Context
 
 Angela's lens:

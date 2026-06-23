@@ -20,6 +20,22 @@ Investigation ends with a finding — not a solution.
   "before we fix this"
 - Mid-task when symptoms don't match the initial hypothesis
 
+## Execution
+
+Spawn a fork for the analytical phase — the fork reads files and builds the
+evidence log without blocking the main thread. The main agent handles the
+interactive confirmation with the user.
+
+1. Announce: "Starting forensic investigation..."
+2. Confirm the symptom statement with the user (Step 1) **before** spawning the fork —
+   this is lightweight and must be confirmed first.
+3. Spawn a fork with this SKILL.md content, the confirmed symptom, and the relevant
+   file list. Instruct the fork to execute Steps 2–5 and return the structured output.
+4. When the fork returns, present the finding statement (Step 6) and wait for user
+   confirmation before handing off to breakdown.
+
+Never use ScheduleWakeup to wait for the fork — it completes and returns directly.
+
 ## Context
 
 Load the active task context file. Read every file the user identifies as relevant.

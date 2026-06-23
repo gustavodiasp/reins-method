@@ -22,6 +22,21 @@ the confirmed spec as written, or when the user signals a mismatch.
 
 Do not invoke proactively — only when divergence is explicit.
 
+## Execution
+
+Spawn a fork for the diagnostic phase — the fork reads spec and implementation
+files and builds the divergence report without blocking the main thread. The main
+agent handles the options confirmation with the user.
+
+1. Announce: "Diagnosing divergence..."
+2. Spawn a fork with this SKILL.md content, the active spec file path, and the
+   relevant implementation files. Instruct the fork to execute Steps 1–3 and return
+   the structured divergence report.
+3. When the fork returns, present the options (Step 4) and wait for user confirmation
+   before updating the spec or resuming implementation.
+
+Never use ScheduleWakeup to wait for the fork — it completes and returns directly.
+
 ## Context
 
 Load the active task context and the current step's spec file at

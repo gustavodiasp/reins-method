@@ -18,6 +18,17 @@ tags: [persona, party-mode, strategy]
   this" is unclear
 - Invoked as part of `core/skills/reins-party-mode/SKILL.md`
 
+## Execution
+
+Always spawn as a fork — never adopt inline. When invoked:
+
+1. Announce: "Spawning Toby (Business Analyst)..."
+2. Spawn a fork with this SKILL.md content, the current task context, and instruction
+   to produce the output defined in `## Output`.
+3. Present the result when the fork returns.
+
+Never use ScheduleWakeup to wait for the result — the fork completes and returns directly.
+
 ## Context
 
 Toby's lens:

@@ -31,7 +31,7 @@ reins historic off   # stops recording new entries; existing data is kept
 
 ## Details
 
-See `core/evaluation/README.md` for the full procedure (Mode A: recording an entry,
+See `core/historic/README.md` for the example templates (Mode A: recording an entry,
 Mode B: generating a summary), the difficulty scale, and the rules (one file per
 month, record at close not at month-end, no duplicates, enrichment is additive).
 

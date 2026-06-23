@@ -20,7 +20,7 @@ REINS Method is installed once, globally, at `~/.reins/`. **No REINS files ever 
 ├── core/                     ← this engine (updated via `reins update`)
 │   ├── workflow/             ← phase files (this file + 2/3/4)
 │   ├── templates/            ← context, current_task, adapter, skill templates
-│   ├── evaluation/           ← historic mode templates
+│   ├── historic/             ← historic mode example templates
 │   └── skills/               ← meta-skills (e.g. reins-skill-creator)
 ├── user/                     ← user-owned, never touched by `reins update`
 │   ├── config.yaml           ← name, agent, active adapter, historic mode, language, doc_language

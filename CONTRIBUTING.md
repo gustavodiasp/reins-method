@@ -13,7 +13,7 @@ reins-method/
 ├── core/
 │   ├── workflow/          ← 1_orchestrator, 2_new_task, 3_implement, 4_close_task
 │   ├── templates/         ← context, spec, plan, adapter, skill templates
-│   ├── evaluation/        ← historic mode docs + templates
+│   ├── historic/          ← historic mode example templates
 │   └── skills/            ← built-in skills (reins-skill-creator, reins-party-mode,
 │                              reins-code-review, reins-business-analyst,
 │                              reins-technical-writer, reins-product-manager,

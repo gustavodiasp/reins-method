@@ -65,6 +65,20 @@ If the user already typed a name starting with `reins-` (or `reins-<adapter>-`) 
 adapter skill, Darryl strips it back to the bare function name first, so the prefix
 is never doubled.
 
+### Agent Compatibility: Bridge Wiring (Important)
+
+When `reins sync` runs, it generates **bridge files for each registered agent** (Claude Code, Gemini, Copilot, Codex, Aider, OpenCode). The bridge generation process differs by agent:
+
+- **Claude Code, Gemini, Copilot:** use `@reference` syntax in bridge files. Skills are listed with their file paths (`@/path/to/skill/SKILL.md`). These agents natively resolve `@references` when the bridge is loaded.
+- **Codex, Aider, OpenCode:** do NOT support `@references`. Their bridge files must contain inline (embedded) content — the full text of `1_orchestrator.md`, standards, and skills descriptions are copied directly into the bridge file.
+
+**What this means for skill creators:**
+- Skills are storage-agnostic — write `SKILL.md` once, it works everywhere
+- When the user runs `reins sync`, your skill is automatically made available to **all registered agents**, regardless of their wiring strategy
+- If your skill references external files (e.g., `@core/templates/something.md`), those must resolve at runtime, not in the bridge — the skill author is responsible for handling file lookups within their SKILL.md logic
+
+**Testing:** After creating a new skill, verify it works on your primary agent (e.g., Claude Code) *and* on a non-reference agent (e.g., Codex) by running `reins sync` and testing the skill in both environments.
+
 ## Flow
 
 1. **Darryl asks** what the skill should do and when it should trigger:

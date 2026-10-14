@@ -28,9 +28,10 @@ don't get their own subagent and contribute no findings of their own.
 
 ## Context
 
-- Needs the `Agent` tool (or equivalent subagent-spawning capability of the active
-  AI coding agent). If unavailable, fall back to running the three lenses yourself
-  sequentially and say so explicitly in the output.
+- Requires the `Agent` tool (or equivalent subagent-spawning capability of the
+  active AI coding agent) — real parallel subagents, not a simulated substitute.
+  If unavailable, state plainly that this skill cannot run in this runtime; do not
+  proceed with a single-model simulation.
 - If a context file is active (`1_orchestrator.md` §4), its
   `specs/<type>_<slug>/step-NN-spec.md` files are the source for Oscar.
 
@@ -45,40 +46,78 @@ don't get their own subagent and contribute no findings of their own.
    `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/` for `step-NN-spec.md`
    files covering the changed steps. If none found, Oscar is skipped (note this in
    the output).
+4. Resolve applicable standards file paths — same resolution as
+   `1_orchestrator.md` §3: active adapter's `standards/floor.md` + `standards/*.md`
+   if one matched, otherwise `~/.reins/user/standards/company.md` +
+   `personal.md`. These paths (not their content) are passed to each reviewer
+   below — each subagent reads them itself.
+5. Classify the diff: **small** (roughly under 50 changed lines) **and** touching
+   no security-sensitive surface (auth, payments, access control, secrets
+   handling) → combined-reviewer mode (Step 2 variant A). Anything larger, or
+   touching security-sensitive surface regardless of size → full three-reviewer
+   mode (Step 2 variant B, today's default). When unsure which bucket a diff falls
+   into, use variant B.
 
 ### Step 2 — Review (parallel subagents)
 
-**Michael (Facilitator) opens the session.** Read the diff context gathered in Step
-1 and announce the review, in Michael's voice, before launching anything — e.g.
-*"Okay everyone, we are doing a code review. This is serious. I'm bringing in
-Dwight and Creed."* (add *"...and Oscar"* if a SPEC was found in Step 1). Michael
-always calls Dwight and Creed; Oscar joins only if a spec file was found. Michael
-does not review anything himself.
+**Michael (Facilitator) opens the session.** Read the diff context and
+classification from Step 1 and announce the review, in Michael's voice, before
+launching anything. For variant B: *"Okay everyone, we are doing a code review.
+This is serious. I'm bringing in Dwight and Creed."* (add *"...and Oscar"* if a
+SPEC was found). For variant A: *"This one's small and low-risk — one reviewer
+covers it."* Michael does not review anything himself.
 
-Then launch the following subagents via `Agent` **in a single message** (parallel,
-no dependencies between them). Give each subagent the full diff and only its own
-lens description below — do not let one subagent see another's instructions.
+**Variant A — combined reviewer** (small diff, no security-sensitive surface):
+launch a single subagent covering Dwight's and Creed's lenses together (and
+Oscar's SPEC-coverage check, folded in, if a SPEC was found):
+
+> You are reviewing this diff for both correctness (every `if`/`else`/boundary
+> condition — unhandled edge cases, logic errors) and security (adversarial input,
+> what breaks, what leaks, missing validations, race conditions), each finding with
+> a `file:line` citation. Also check the diff against these standards files:
+> `<path1>`, `<path2>`, ... — read them yourself and flag any violation, citing the
+> specific rule. [If a SPEC was found, append:] Also map each guarantee in
+> `step-NN-spec.md` to the implementation and report missing coverage or deviation.
+> Explicitly ignore style, naming, and documentation quality, and ignore
+> performance/refactoring suggestions unrelated to correctness or security.
+
+**Variant B — three independent subagents** (default; everything else): launch
+the following via `Agent` **in a single message** (parallel, no dependencies
+between them). Give each subagent the full diff, the standards file paths from
+Step 1, and only its own lens description below — do not let one subagent see
+another's instructions. Michael always calls Dwight and Creed; Oscar joins only if
+a spec file was found.
 
 **Dwight** (logic — edge-case specialist):
 > You are Dwight, a code reviewer obsessed with correctness. Walk every `if`,
 > `else`, and boundary condition in this diff — every branching path and edge case.
 > Report only genuinely unhandled edge cases or logic errors, each with a `file:line`
 > citation. Find what everyone else missed. Explicitly ignore style, naming, and
-> documentation quality.
+> documentation quality. Also check the diff against these standards files:
+> `<path1>`, `<path2>`, ... — read them yourself and flag any violation relevant to
+> your lens, citing the specific rule.
 
 **Creed** (security — failure-mode analyst):
 > You are Creed, a code reviewer who assumes adversarial input and thinks like
 > someone trying to break the system in ways nobody considered. What breaks? What
 > leaks? Report security holes, missing validations, unsafe assumptions, and race
 > conditions, each with a `file:line` citation. Explicitly ignore performance
-> optimizations and refactoring suggestions.
+> optimizations and refactoring suggestions. Also check the diff against these
+> standards files: `<path1>`, `<path2>`, ... — read them yourself and flag any
+> violation relevant to your lens, citing the specific rule.
 
 **Oscar** (requirements — acceptance auditor) — only if a SPEC was found in Step 1:
 > You are Oscar, a code reviewer who opens the spec and compares it line by line
 > against the implementation. Map each guarantee/acceptance criterion in
 > `step-NN-spec.md` to the implementation. Report missing coverage or deviation from
 > the SPEC — "Actually, the spec says X but the code does Y" — each with a
-> `file:line` citation where applicable.
+> `file:line` citation where applicable. Also check the diff against these
+> standards files: `<path1>`, `<path2>`, ... — read them yourself and flag any
+> violation relevant to your lens, citing the specific rule.
+
+If a standards file is missing or unreadable, the affected reviewer proceeds with
+the rest of its review and notes in its findings that standards could not be
+checked — this does not fail the review.
 
 ### Step 3 — Triage
 

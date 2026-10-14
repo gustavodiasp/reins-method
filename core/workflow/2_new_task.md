@@ -21,6 +21,13 @@ Read everything I give you: the task description, acceptance criteria, comments,
 
 Do not assume. If something is unclear, ask before moving on.
 
+**First task for this project:** if `~/.reins/user/projects/<project-slug>/contexts/`
+has no files at all (not even paused ones), say so explicitly before proceeding —
+there is no project memory yet for this app. Ask whether to create the context as
+part of this task (continuing to Step 5 below) or proceed without one (e.g. for a
+one-off question with no lasting state). Skip this check entirely for requests that
+are purely exploratory and were never headed toward a SPEC/implementation step.
+
 ---
 
 ## Bugfix — Investigate first

@@ -69,14 +69,22 @@ Context files at `~/.reins/user/projects/<project-slug>/contexts/<type>_<slug>.m
 **Session start (always):**
 - `1_orchestrator.md` (this file)
 - Active context file (§4)
-- Adapter standards (§3) + user standards / generic standards
 
 **Under demand (lazy):**
 - `2_new_task.md` → when starting new task
+  - Project map `graphify-out/GRAPH_REPORT.md` → if present, load at this point (architecture context matters for breakdown/planning, not for every session turn)
 - `3_implement.md` (adapter or core) → when entering development phase
+  - Adapter standards (§3) + user standards / generic standards → load at this point, not before
+  - Project map `graphify-out/GRAPH_REPORT.md` → if present and not already loaded this session
+- `core/skills/reins-code-review` → when invoked
+  - Applicable standards (same resolution as §3) → load at this point
 - `4_close_task.md` → when closing task
 - Skills (`core/skills/`, `<adapter>/skills/`, `user/skills/`) → never proactively, only when explicitly invoked
-- Project map `graphify-out/GRAPH_REPORT.md` → if present, load at session start for architecture context
+
+A session that never enters the development or review phase (a question answered by
+reading code, a one-off lookup) never pays the token cost of loading standards or
+the project map — §3's matching procedure itself is unchanged, only *when in the
+session* it runs.
 
 ## 6 — Workflow
 

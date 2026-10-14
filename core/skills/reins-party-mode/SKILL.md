@@ -14,21 +14,20 @@ tags: [party-mode, discussion, meta]
 # Party Mode
 
 A multi-perspective discussion over a task, framed by Michael (Facilitator) and
-closed by Jim (Synthesizer). Each selected persona produces an independent perspective.
+closed by Jim (Synthesizer). Each selected persona produces an independent
+perspective, as a real parallel subagent — not a simulated substitute.
 
-**Two modes — use the best one available:**
+**Requires the `Agent` tool.** Spawn every selected persona as a real independent
+subagent, launched together in a single batch (no dependencies between them,
+matching each persona's own `SKILL.md` "Always spawn as a fork — never adopt
+inline"). Pass each subagent: the task description, the persona's `SKILL.md`
+content, and instructions to produce its perspective output. Collect outputs as
+they return, then run Jim's synthesis yourself once all have returned. Announce at
+start: *"Spawning [N] independent perspectives..."*
 
-- **Subagent mode** (preferred): if the Agent tool is available in your runtime,
-  spawn each persona as a real independent subagent. Pass each subagent: the task
-  description, the persona's `SKILL.md` content, and instructions to produce its
-  perspective output. Collect all outputs, then run Jim's synthesis yourself.
-  Announce at start: *"Spawning [N] independent perspectives..."*
-
-- **Sequential mode** (fallback): if the Agent tool is not available, adopt each
-  persona's lens in sequence as the same model. Announce explicitly:
-  *"Running in sequential mode — perspectives are simulated, not independent."*
-
-The rest of this skill applies to both modes.
+If the `Agent` tool is unavailable in this runtime, state plainly that this skill
+cannot run here — do not proceed by simulating personas sequentially as the same
+model.
 
 ## Trigger
 
@@ -71,8 +70,9 @@ flavor is fine, but never required.
    architecture view, and a UX view on this one."* (naming personas, e.g. "Toby,
    David, and Erin", is optional flavor — not required). Michael does not
    contribute a domain opinion of his own.
-2. **Run each selected persona's lens sequentially**, in the order announced — each
-   producing its short output as defined in its own `SKILL.md`.
+2. **Launch every selected persona's fork in a single batch** (parallel, no
+   dependencies between them) and collect each one's output, as defined in its own
+   `SKILL.md`, as it returns.
 3. **Jim (Synthesizer) closes the session.** After every persona has spoken, cut
    through the noise — ignore tangents — and distill it all into what actually
    matters for the breakdown: agreements, tensions between perspectives (e.g., Erin

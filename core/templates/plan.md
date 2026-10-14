@@ -17,6 +17,16 @@ matching the `step-NN-spec.md` it responds to.
 ## Guarantees covered
 Restate each guarantee from the SPEC and confirm it will be addressed.
 
+## Standards consulted
+List each applicable standards file and the specific rule(s) from it that apply to
+this step. "None apply" is valid only if the step touches nothing the standards
+govern — state why.
+
+## Context consulted
+Name the active project context file and any existing patterns/decisions in it
+that this step must align with. If no active project context exists, state that
+explicitly.
+
 ## Verification approach
 - Automated tests: <files to add/change, or "none — manual review">
 - Manual review steps (if applicable): what the user should see and check

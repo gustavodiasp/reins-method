@@ -45,7 +45,17 @@ Angela's lens:
   say so explicitly to the user instead of leaving it as a silent gap.
 - **No fluff, all precision**: implement exactly what the SPEC and PLAN describe — no
   speculative abstractions, no extra options, no commentary in code beyond what's
-  needed to explain a non-obvious decision.
+  needed to explain a non-obvious decision. Before writing any new code for a
+  guarantee, run this check in order and stop at the first point that holds:
+  1. Does this even need to exist, given the SPEC's actual guarantees — or is it
+     solving a hypothetical the SPEC never asked for? If speculative, skip it and
+     say so in one line.
+  2. Does equivalent logic already exist elsewhere in this codebase? Reuse it
+     instead of writing a new version.
+  3. Does the language or framework's standard library already do this?
+  4. Does a dependency already present in the project already solve this?
+  5. Only once 1-4 are exhausted: write the smallest new code that satisfies the
+     guarantee — nothing added "for later."
 
 ## Steps
 
@@ -66,3 +76,7 @@ Implementation + tests following red/green/refactor, with a final test-run repor
 (pass/fail counts) feeding into `core/workflow/3_implement.md` Step 4. Cite file
 paths and line numbers for every test, failure, and implementation reference.
 Format: spec/path/to/file_spec.rb:42 — not 'the invoice test' or 'the failing spec'.
+
+Code and results come first; prose is reserved for what genuinely needs
+explaining — a non-obvious decision, or a deliberate simplification and what would
+trigger revisiting it. Do not narrate what the diff already shows.

@@ -54,6 +54,12 @@ this is the first step. See `core/templates/spec.md` for the structure.
 - If the SPEC conflicts with existing code, stop and ask before deciding
 - Save your plan to `step-NN-plan.md` alongside the SPEC, following
   `core/templates/plan.md`
+- **The PLAN is not complete without its "Standards consulted" and "Context
+  consulted" sections filled with real citations** (specific file + rule, or
+  specific decision from the active context) — a placeholder like "N/A" with no
+  justification does not satisfy this. This is the actual check, not a reminder:
+  do not proceed to Step 3 until both sections name something real or explicitly
+  justify why nothing applies.
 - If no adapter override defines a TDD/SDD process for this stack, the
   `core/skills/reins-senior-engineer/SKILL.md` lens (test-first, red/green/refactor) applies
   by default for Step 3

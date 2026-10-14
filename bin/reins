@@ -395,13 +395,39 @@ cleanup_claude_skill_links() { cleanup_skill_links "$HOME/.claude/skills"; }
 
 _sync_skill_symlinks() {
   # _sync_skill_symlinks <skills-dir> — refreshes reins-* symlinks in the given dir
+  #
+  # Buffers collect_skills' output first so a name collision (two source
+  # directories computing the same "reins-*" name) can be detected and reported
+  # loudly before any symlink is created — rather than the last writer silently
+  # overwriting the first via `ln -sf`.
   local skills_dir="$1"
   mkdir -p "$skills_dir"
   cleanup_skill_links "$skills_dir"
+
+  local pairs
+  pairs="$(collect_skills)"
+  [ -n "$pairs" ] || return 0
+
+  local dupes
+  dupes="$(printf '%s\n' "$pairs" | cut -f2 | sort | uniq -d)"
+
+  local dir reins_name
   while IFS=$'\t' read -r dir reins_name; do
     [ -n "$dir" ] || continue
+    if [ -n "$dupes" ] && printf '%s\n' "$dupes" | grep -qxF "$reins_name"; then
+      continue
+    fi
     ln -sf "$dir" "$skills_dir/$reins_name"
-  done < <(collect_skills)
+  done <<< "$pairs"
+
+  if [ -n "$dupes" ]; then
+    local name
+    while IFS= read -r name; do
+      [ -n "$name" ] || continue
+      err "skill name collision: '$name' is claimed by more than one source — not linked:"
+      printf '%s\n' "$pairs" | awk -F'\t' -v n="$name" '$2==n {print "  " $1}' >&2
+    done <<< "$dupes"
+  fi
 }
 
 sync_skills() {
@@ -1133,7 +1159,7 @@ cmd_historic() {
       config_set historic_mode on
       local month_file="$USER_DIR/historic/$(date +%Y-%m).md"
       if [ ! -f "$month_file" ]; then
-        cp "$CORE_DIR/evaluation/templates/monthly.md" "$month_file"
+        cp "$CORE_DIR/historic/templates/monthly.md" "$month_file"
         [ "${2:-}" = "--quiet" ] || log "Created $month_file — fill in this period's priorities."
       fi
       [ "${2:-}" = "--quiet" ] || log "Historic mode: on"

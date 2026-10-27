@@ -31,7 +31,9 @@ Run `reins sync` at the end of any session that made changes.
 
 ### 1 — Read and present current state
 
-Run `cat ~/.reins/user/config.yaml` and present a clear summary before asking anything:
+Run `cat ~/.reins/user/config.yaml` and present a clear summary before asking anything.
+Also check `~/.reins/user/projects/<project-slug>/standards.md` for the current
+project (if a project is active):
 
 ```
 Current REINS configuration:
@@ -42,6 +44,7 @@ Current REINS configuration:
   ○ Company standards: not configured
   ○ Personal standards: not configured
   ○ Adapter packs: none installed
+  ○ Project standards (this project): not configured
 ```
 
 ### 2 — Ask what the user wants to do
@@ -102,6 +105,31 @@ If already filled: show the first few non-empty lines and confirm it's still cur
 Same approach as company standards. Note that personal standards layer on top of
 company standards — any conflict is flagged by the orchestrator and must be resolved
 before proceeding.
+
+#### Project standards (`~/.reins/user/projects/<project-slug>/standards.md`)
+
+Explain first: *"Project standards are rules tied to one specific project — not
+a stack. An adapter applies to every project matching a stack marker (every
+Node project, say); project standards apply only to this one repo, regardless
+of what stack it is. Use them for something true about this project
+specifically — it's security-sensitive, it's your own tool's source code and
+mistakes here reach every user, it has an unusual review process — not
+something a colleague on a different project in the same stack would need."*
+
+Check if `~/.reins/user/projects/<project-slug>/standards.md` exists for the
+current project. If not: offer to scaffold it — *"I can create
+`~/.reins/user/projects/<slug>/standards.md` now; you fill in what's specific
+to this project and I'll pick it up every session from then on, same
+precedence as an adapter's `floor.md`."* If it exists: show the first few
+non-empty lines and confirm it's still current.
+
+**Important: this file is part of your local REINS installation
+(`~/.reins/user/`), never part of the project's own repository** — it's your
+personal configuration for how you use REINS on this project, not something
+`reins update` touches or something the project's own contributors see. Never
+write its content into the project's own tracked files (e.g. a `CONTRIBUTING.md`
+in the project repo) — that would impose a personal preference on every
+contributor instead of keeping it as your own tool configuration.
 
 #### Adapter packs (`~/.reins/user/adapters/`)
 

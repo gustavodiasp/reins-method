@@ -12,20 +12,26 @@ or submit pull requests.
 reins-method/
 ├── core/
 │   ├── workflow/          ← 1_orchestrator, 2_new_task, 3_implement, 4_close_task
-│   ├── templates/         ← context, spec, plan, adapter, skill templates
+│   ├── templates/         ← context, task (spec+plan), adapter, skill templates
 │   ├── historic/          ← historic mode example templates
 │   └── skills/            ← built-in skills (reins-skill-creator, reins-party-mode,
-│                              reins-code-review, reins-business-analyst,
-│                              reins-technical-writer, reins-product-manager,
-│                              reins-ux-designer, reins-system-architect,
-│                              reins-senior-engineer, reins-investigate,
-│                              reins-correct-course, reins-faq, reins-config,
-│                              reins-remind)
+│                              reins-code-review, reins-logic-reviewer,
+│                              reins-security-reviewer, reins-acceptance-reviewer,
+│                              reins-business-analyst, reins-technical-writer,
+│                              reins-product-manager, reins-ux-designer,
+│                              reins-system-architect, reins-senior-engineer,
+│                              reins-investigate, reins-correct-course, reins-faq,
+│                              reins-config, reins-remind)
 ├── agents/                ← generated bridge file templates (README inside)
 ├── bin/reins              ← the CLI (bash, no runtime dependencies)
 ├── tools/
-│   └── installer/
-│       └── cli.js         ← `npx reins-method install` (Node, @clack/prompts)
+│   ├── installer/
+│   │   └── cli.js         ← `npx reins-method install` (Node, @clack/prompts)
+│   └── tests/             ← filesystem-only concurrency tests (no AI session):
+│                              context_concurrency_test.py (shared contexts/<type>_<slug>.md
+│                              file, mkdir-lock fix), spec_file_isolation_test.py
+│                              (per-component specs/<type>_<slug>_<component>.md
+│                              files, isolation by construction)
 ├── install.sh             ← curl | bash entry point (no Node required)
 ├── package.json           ← npm package for the installer
 ├── VERSION                ← single source of truth for the version number
@@ -232,7 +238,8 @@ nothing here is a fork or a dependency:
 
 - **[spec-kit](https://github.com/github/spec-kit)** (GitHub) — the per-feature
   `specs/<feature>/{spec,plan}.md` artifact separation that shaped
-  `specs/<type>_<slug>/step-NN-{spec,plan}.md` and the spec/plan templates.
+  `specs/<type>_<slug>.md` (one `## Step NN` section per step) and the task
+  template.
 - **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** — the
   multi-persona discussion and adversarial parallel code-review pattern,
   reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six

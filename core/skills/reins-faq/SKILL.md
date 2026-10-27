@@ -50,13 +50,13 @@ New task → 2_new_task.md  (understand → breakdown → confirm → context fi
 ├── core/          ← the engine (updated by reins update — do not edit directly)
 │   ├── workflow/  ← orchestrator + the 4 phase files
 │   ├── skills/    ← built-in skills
-│   └── templates/ ← context, spec, plan, adapter templates
+│   └── templates/ ← context, task (spec+plan), adapter templates
 ├── user/          ← yours (never touched by reins update)
 │   ├── config.yaml        ← language, historic mode, agents
 │   ├── standards/         ← company.md + personal.md
 │   ├── adapters/          ← installed adapter packs
 │   ├── skills/            ← your custom skills
-│   ├── projects/          ← per-project context files and specs
+│   ├── projects/          ← per-project context files, specs, and standards.md
 │   └── historic/          ← monthly performance entries
 └── agents/        ← generated bridge files per AI agent
 ```
@@ -77,6 +77,23 @@ Edit one: `reins edit adapters`
 The orchestrator matches an adapter's declared `stacks:` against your project's marker
 files (`Gemfile`, `package.json`, etc.) and loads it automatically on every session.
 
+### What are project standards?
+
+Rules tied to one specific project, not a stack — the difference from an
+adapter. An adapter matches by stack marker (every Node project gets it);
+project standards live at `~/.reins/user/projects/<project-slug>/standards.md`
+and apply only when that exact project is active, regardless of what stack it
+is. Use them for something true about *this* project specifically — it's
+security-sensitive, it's your own tool's source and mistakes here reach every
+user, it has a review process stricter than your other work — not something a
+colleague on a different project in the same stack would need.
+
+Loaded always when present, same precedence tier as an adapter's `floor.md`
+(non-negotiable). Create one by hand, or via `reins-config`. Lives in
+`~/.reins/user/` like everything else in `projects/` — never part of the
+project's own repository, so it's your personal configuration, not something
+`reins update` touches or other contributors to that project see.
+
 ### What are skills?
 
 On-demand procedures loaded only when invoked — never proactively. Each skill is a
@@ -87,7 +104,10 @@ Built-in skills:
 | Skill | When |
 |---|---|
 | `reins-party-mode` | Multi-perspective discussion before a breakdown |
-| `reins-code-review` | Adversarial parallel review before a commit |
+| `reins-code-review` | Adversarial parallel review before a commit — selects and calls the three reviewer skills below |
+| `reins-logic-reviewer` | Correctness/edge-case lens — usually called by `reins-code-review`, or standalone |
+| `reins-security-reviewer` | Security/failure-mode lens — usually called by `reins-code-review`, or standalone |
+| `reins-acceptance-reviewer` | SPEC-coverage lens — usually called by `reins-code-review`, or standalone |
 | `reins-investigate` | Root-cause analysis before a bugfix breakdown |
 | `reins-correct-course` | Mid-implementation divergence from confirmed spec |
 | `reins-business-analyst` | Business/stakeholder perspective on a task |
@@ -141,15 +161,21 @@ branch guard runs (checks you're on the right git branch before continuing).
 
 ### What are specs and plans?
 
-For each step in a breakdown, two files are saved:
+One file per task, at `~/.reins/user/projects/<slug>/specs/<type>_<slug>.md`, with
+one `## Step NN` section per breakdown step, appended as each step is reached —
+or, for a multi-component task, one file **per component**,
+`specs/<type>_<slug>_<component>.md`, so two components never share a file (no
+locking needed: isolation by construction):
 
-- `step-NN-spec.md` — written by **you**, saved by the agent. Expected behaviour,
-  edge cases, guarantees.
-- `step-NN-plan.md` — written by the **agent**. Confirms understanding and states
-  how the step will be verified.
+- `### SPEC` — written by **you**, saved by the agent. Expected behaviour, edge
+  cases, guarantees.
+- `### PLAN` — written by the **agent**. Confirms understanding and states how
+  the step will be verified.
 
-Both live at `~/.reins/user/projects/<slug>/specs/<type>_<slug>/`. They're deleted at
-task close after the PR is merged — with your explicit confirmation.
+Each file is deleted at its own task/component close after its PR is merged —
+with your explicit confirmation. For a multi-component task, closing the whole
+task requires every component's PR merged first — one component finishing
+early never deletes another still-active component's file.
 
 ### What CLI commands are available?
 

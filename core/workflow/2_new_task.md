@@ -69,7 +69,12 @@ Rules for the breakdown:
 - Steps must be **ordered by dependency** — foundational changes come first
 - Each step should be **independently testable or verifiable**
 - If a step feels large, split it further
-- If the project is multi-stack (see `1_orchestrator.md` §2), label each step by component (e.g. `(backend)`, `(frontend)`, `(integration)`)
+- If the project is multi-stack (see `1_orchestrator.md` §2), label each step
+  by component (e.g. `(backend)`, `(frontend)`, `(integration)`). **Component
+  labels must be a single lowercase word** — letters, digits, and `-` only, no
+  `/`, `.`, spaces, or other separators. This label gets interpolated into
+  file paths (`specs/<type>_<slug>_<component>.md`); an unconstrained label
+  could otherwise reach a create/delete path with unintended characters.
 
 Present the breakdown as a numbered list with a one-line description per step. Wait for my confirmation before proceeding.
 
@@ -111,7 +116,9 @@ updated_at: <today>
 
 4. Fill in `## Task` and `## Epic` from what I provided
 5. Fill in `## Breakdown` with the confirmed steps as unchecked items
-6. Fill in `## Current step` with the first pending step
+6. Fill in `## Current step` with the first pending step — one line if
+   single-component, or one labeled line per component's first pending step if
+   `branches` has more than one entry (see `core/templates/context.md`)
 7. Fill in `## Decisions made` with any architecture decisions I confirmed
 8. Leave `## Objective` and `## My notes` untouched — those are mine
 

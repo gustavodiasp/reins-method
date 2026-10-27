@@ -376,7 +376,8 @@ nothing here is a fork or a dependency:
 
 - **[spec-kit](https://github.com/github/spec-kit)** (GitHub) — the per-feature
   `specs/<feature>/{spec,plan}.md` artifact separation that shaped
-  `specs/<type>_<slug>/step-NN-{spec,plan}.md` and the spec/plan templates.
+  `specs/<type>_<slug>.md` (one `## Step NN` section per step) and the task
+  template.
 - **[BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD)** — the
   multi-persona discussion and adversarial parallel code-review pattern,
   reimplemented natively as `reins-party-mode`, `reins-code-review`, and the six

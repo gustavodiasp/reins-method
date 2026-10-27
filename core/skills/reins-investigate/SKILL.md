@@ -4,7 +4,7 @@ description: >
   Forensic root-cause investigation before a bugfix breakdown. Establishes what
   is actually broken and why before implementation begins. Ends with a confirmed
   finding statement — never a fix proposal.
-allowed-tools: [read, bash]
+allowed-tools: [read, bash, Agent]
 tags: [investigate, bugfix, root-cause]
 ---
 

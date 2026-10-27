@@ -49,8 +49,19 @@ If the active context file (see §4) already declares a `stack`, trust it instea
    - [ ] Load `<adapter>/workflow/3_implement.md` if present (overrides `core/workflow/3_implement.md`)
 4. If no adapter matches: use generic conventions in `~/.reins/user/standards/company.md` + `personal.md`
 5. If multiple stacks detected: load all matching adapters; label breakdown steps by adapter/stack
+6. **Always also check** for
+   `~/.reins/user/projects/<project-slug>/standards.md` — project-level
+   standards, scoped to this one project regardless of stack or adapter match.
+   If it exists, load it additively on top of whichever branch above applied
+   (non-negotiable, same precedence tier as `floor.md`). Use this for rules
+   tied to a specific project's identity rather than its stack — e.g. "this
+   project is REINS's own source, changes here need extra scrutiny" — not
+   something an adapter (which matches by stack marker, not by repo) can
+   express. Create one by hand at that path, or via `reins-config` (see
+   `core/skills/reins-config/SKILL.md`).
 
-**Conflict rule:** if `personal.md` contradicts `floor.md`, stop and ask user to resolve before proceeding.
+**Conflict rule:** if `personal.md` or `standards.md` (project-level)
+contradicts `floor.md`, stop and ask user to resolve before proceeding.
 
 ## 4 — Active context
 
@@ -64,6 +75,31 @@ Context files at `~/.reins/user/projects/<project-slug>/contexts/<type>_<slug>.m
 
 **Multi-component guard (before developing any step):** if `branches` has >1 entry, verify each branch is correct before proceeding (run `git branch --show-current` per component, compare to context frontmatter). If mismatch: ask user to switch branch, update context, or cancel.
 
+**Running sessions in parallel:** this is how to run two or more sessions at once
+on one task's different components (e.g. a backend session and a frontend session
+on the same feature): `## Breakdown` steps labeled per component (`(backend)`,
+`(frontend)` — see `2_new_task.md` Step 3); `## Current step` holding one line
+per component (see `core/templates/context.md`); and each component's SPEC+PLAN
+in its own file, `specs/<type>_<slug>_<component>.md`, never shared with another
+component (see `core/templates/task.md`). The **spec files are isolated by
+construction** — no two components ever touch the same path, nothing to
+coordinate there. The **context file is not** — `branches`, `## Breakdown`,
+`## Current step`, and `## SPEC status` all live in one shared
+`<type>_<slug>.md` that every component's session reads and writes. This *is*
+coordinated, not merely isolated: every session wraps its update in a
+short-lived `mkdir`-based lock and makes a targeted change scoped to exactly
+its own line while holding it (see `3_implement.md`'s "After confirmation —
+update the context file"). An earlier version of this fix used
+re-read-then-recheck with no real lock ("optimistic concurrency") and passed
+review, but re-testing at a stricter standard found it still silently
+corrupted the file in roughly 1 of 20 runs under stress — re-checking right
+before a write isn't atomic with the write itself, so another session can
+land in that gap. The mutex closes it: re-tested at 0 lost updates and 0
+silent collisions across 60+ runs (`tools/tests/context_concurrency_test.py`).
+Writing the whole file from memory, or doing a targeted edit without the
+lock, is exactly the bug this mechanism exists to prevent — both were
+measured, not theoretical.
+
 ## 5 — What gets loaded when
 
 **Session start (always):**
@@ -74,10 +110,13 @@ Context files at `~/.reins/user/projects/<project-slug>/contexts/<type>_<slug>.m
 - `2_new_task.md` → when starting new task
   - Project map `graphify-out/GRAPH_REPORT.md` → if present, load at this point (architecture context matters for breakdown/planning, not for every session turn)
 - `3_implement.md` (adapter or core) → when entering development phase
-  - Adapter standards (§3) + user standards / generic standards → load at this point, not before
+  - Adapter standards (§3) + user standards / generic standards +
+    project-level `standards.md` (§3.6, if present) → load at this point, not
+    before
   - Project map `graphify-out/GRAPH_REPORT.md` → if present and not already loaded this session
 - `core/skills/reins-code-review` → when invoked
-  - Applicable standards (same resolution as §3) → load at this point
+  - Applicable standards (same resolution as §3, project-level included) →
+    load at this point
 - `4_close_task.md` → when closing task
 - Skills (`core/skills/`, `<adapter>/skills/`, `user/skills/`) → never proactively, only when explicitly invoked
 
@@ -100,7 +139,8 @@ Task arrives → 2_new_task.md
       ↓
 For each step → 3_implement.md
   - Implement + test (use adapter-specific workflow if present)
-  - Save specs to specs/<type>_<slug>/step-NN-{spec,plan}.md
+  - Save SPEC+PLAN to a `## Step NN` section in specs/<type>_<slug>.md
+    (or that component's own specs/<type>_<slug>_<component>.md, if multi-component)
       ↓
 On close → 4_close_task.md
   - Run tests

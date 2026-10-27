@@ -1,23 +1,31 @@
 ---
 name: reins-code-review
 description: >
-  Adversarial, parallel code review using independent subagents — not role-play.
-  Michael (Facilitator) announces the session and calls in Dwight (logic/edge-case
-  correctness) and Creed (security/failure-mode analysis), plus Oscar (requirements
-  coverage) if a SPEC is available; after triage, Jim (Synthesizer) summarizes what
-  needs fixing before merge. Use before proposing a commit message, on PRs, or
-  whenever the user asks to "review this code"/"review this diff"/"review this PR".
+  Adversarial, parallel code review orchestrating independent reviewer
+  skills — not role-play. Michael (Facilitator) announces the session and
+  selects which of `reins-logic-reviewer` (Dwight), `reins-security-reviewer`
+  (Creed), and `reins-acceptance-reviewer` (Oscar) are worth calling for this
+  diff — always as separate, individual subagents, never merged into one; after
+  triage, Jim (Synthesizer) summarizes what needs fixing before merge. Use
+  before proposing a commit message, on PRs, or whenever the user asks to
+  "review this code"/"review this diff"/"review this PR".
 allowed-tools: Agent
 tags: [review, quality, multi-agent]
 ---
 
-# Code Review — Parallel Independent Subagents
+# Code Review — Selector + Independent Reviewer Skills
 
-Unlike the persona skills (which are lenses *you* adopt), this skill's defining
-characteristic is spawning **real, independent subagents** via the `Agent` tool —
-genuine independence, no groupthink, each agent only sees its own lens and the diff.
-Michael (opening) and Jim (closing) are framing roles *you* adopt directly — they
-don't get their own subagent and contribute no findings of their own.
+This skill **decides which reviewer skills are worth calling**, then spawns
+each selected one as a **real, independent subagent** via the `Agent` tool —
+genuine independence, no groupthink, each subagent only sees its own lens
+(from its own `SKILL.md`: `reins-logic-reviewer`, `reins-security-reviewer`,
+`reins-acceptance-reviewer`) and the diff. **Never merge two lenses into one
+subagent's prompt** — if a diff's scope only warrants one lens, call that one
+lens alone; the adversarial-independence property (no groupthink) only holds
+when each subagent's view is genuinely its own. Michael (opening) and Jim
+(closing) are framing roles *you* adopt directly — they don't get their own
+subagent, don't become their own skill, and contribute no findings of their
+own.
 
 ## Trigger
 
@@ -32,8 +40,20 @@ don't get their own subagent and contribute no findings of their own.
   active AI coding agent) — real parallel subagents, not a simulated substitute.
   If unavailable, state plainly that this skill cannot run in this runtime; do not
   proceed with a single-model simulation.
-- If a context file is active (`1_orchestrator.md` §4), its
-  `specs/<type>_<slug>/step-NN-spec.md` files are the source for Oscar.
+- The three reviewer lenses are separate skills, read when selected (never
+  inlined here): `core/skills/reins-logic-reviewer/SKILL.md`,
+  `core/skills/reins-security-reviewer/SKILL.md`,
+  `core/skills/reins-acceptance-reviewer/SKILL.md`.
+- If a context file is active (`1_orchestrator.md` §4), its spec file's
+  `## Step NN` → `### SPEC` sections are the source for
+  `reins-acceptance-reviewer` —
+  `specs/<type>_<slug>.md` (single-component) or every relevant component's own
+  `specs/<type>_<slug>_<component>.md` (multi-component; resolve the component
+  from the changed files' paths, not from guessing). **Multi-component tasks
+  can also have an orphaned pre-split `specs/<type>_<slug>.md` (no suffix)
+  holding steps from before a second component existed** (see
+  `core/templates/task.md`) — if the changed files include steps recorded
+  there, that file is a SPEC source too, not just the per-component files.
 
 ## Steps
 
@@ -43,81 +63,54 @@ don't get their own subagent and contribute no findings of their own.
    a specific PR, or a commit range — ask the user if ambiguous.
 2. Construct the unified diff for that scope.
 3. Look for a SPEC: if a context file is active, check
-   `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/` for `step-NN-spec.md`
-   files covering the changed steps. If none found, Oscar is skipped (note this in
-   the output).
+   `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>.md` (or, for a
+   multi-component task, every component's own `specs/<type>_<slug>_<component>.md`
+   **plus the same unsuffixed `specs/<type>_<slug>.md`, if it still exists
+   alongside them, for any pre-split steps** — do not skip it just because it
+   doesn't match the `_<component>` pattern)
+   for the `## Step NN` sections covering the changed steps. If none found, Oscar
+   is skipped (note this in the output).
 4. Resolve applicable standards file paths — same resolution as
    `1_orchestrator.md` §3: active adapter's `standards/floor.md` + `standards/*.md`
    if one matched, otherwise `~/.reins/user/standards/company.md` +
-   `personal.md`. These paths (not their content) are passed to each reviewer
+   `personal.md`, plus this project's `~/.reins/user/projects/<project-slug>/standards.md`
+   if it exists. These paths (not their content) are passed to each reviewer
    below — each subagent reads them itself.
-5. Classify the diff: **small** (roughly under 50 changed lines) **and** touching
-   no security-sensitive surface (auth, payments, access control, secrets
-   handling) → combined-reviewer mode (Step 2 variant A). Anything larger, or
-   touching security-sensitive surface regardless of size → full three-reviewer
-   mode (Step 2 variant B, today's default). When unsure which bucket a diff falls
-   into, use variant B.
+5. Select which reviewer skills are worth calling — always as separate
+   individual subagents, never merged:
+   - `reins-logic-reviewer` (Dwight) — **always called.**
+   - `reins-security-reviewer` (Creed) — called unless the diff is **small**
+     (roughly under 50 changed lines) **and** touches no security-sensitive
+     surface (auth, payments, access control, secrets handling). When unsure,
+     call it.
+   - `reins-acceptance-reviewer` (Oscar) — called only if a SPEC was found in
+     Step 1.3.
+   **Before applying the size-based skip for the security lens, check whether
+   this project's `standards.md` (from step 4, if it exists) specifies its
+   own review-mode rule** (e.g. "always use three-reviewer mode for this
+   project") — honor it over the generic size heuristic, i.e. call
+   `reins-security-reviewer` regardless of size. This lets one project opt
+   into stricter review without hardcoding that project's name or paths into
+   this shared skill.
 
 ### Step 2 — Review (parallel subagents)
 
-**Michael (Facilitator) opens the session.** Read the diff context and
-classification from Step 1 and announce the review, in Michael's voice, before
-launching anything. For variant B: *"Okay everyone, we are doing a code review.
-This is serious. I'm bringing in Dwight and Creed."* (add *"...and Oscar"* if a
-SPEC was found). For variant A: *"This one's small and low-risk — one reviewer
-covers it."* Michael does not review anything himself.
+**Michael (Facilitator) opens the session.** Read the diff context and the
+selection from Step 1 and announce the review, in Michael's voice, before
+launching anything — e.g. *"Okay everyone, we are doing a code review. This is
+serious. I'm bringing in Dwight and Creed."* (add *"...and Oscar"* if a SPEC
+was found), or, when the security lens was skipped: *"This one's small and
+low-risk — Dwight alone covers it."* Michael does not review anything himself.
 
-**Variant A — combined reviewer** (small diff, no security-sensitive surface):
-launch a single subagent covering Dwight's and Creed's lenses together (and
-Oscar's SPEC-coverage check, folded in, if a SPEC was found):
-
-> You are reviewing this diff for both correctness (every `if`/`else`/boundary
-> condition — unhandled edge cases, logic errors) and security (adversarial input,
-> what breaks, what leaks, missing validations, race conditions), each finding with
-> a `file:line` citation. Also check the diff against these standards files:
-> `<path1>`, `<path2>`, ... — read them yourself and flag any violation, citing the
-> specific rule. [If a SPEC was found, append:] Also map each guarantee in
-> `step-NN-spec.md` to the implementation and report missing coverage or deviation.
-> Explicitly ignore style, naming, and documentation quality, and ignore
-> performance/refactoring suggestions unrelated to correctness or security.
-
-**Variant B — three independent subagents** (default; everything else): launch
-the following via `Agent` **in a single message** (parallel, no dependencies
-between them). Give each subagent the full diff, the standards file paths from
-Step 1, and only its own lens description below — do not let one subagent see
-another's instructions. Michael always calls Dwight and Creed; Oscar joins only if
-a spec file was found.
-
-**Dwight** (logic — edge-case specialist):
-> You are Dwight, a code reviewer obsessed with correctness. Walk every `if`,
-> `else`, and boundary condition in this diff — every branching path and edge case.
-> Report only genuinely unhandled edge cases or logic errors, each with a `file:line`
-> citation. Find what everyone else missed. Explicitly ignore style, naming, and
-> documentation quality. Also check the diff against these standards files:
-> `<path1>`, `<path2>`, ... — read them yourself and flag any violation relevant to
-> your lens, citing the specific rule.
-
-**Creed** (security — failure-mode analyst):
-> You are Creed, a code reviewer who assumes adversarial input and thinks like
-> someone trying to break the system in ways nobody considered. What breaks? What
-> leaks? Report security holes, missing validations, unsafe assumptions, and race
-> conditions, each with a `file:line` citation. Explicitly ignore performance
-> optimizations and refactoring suggestions. Also check the diff against these
-> standards files: `<path1>`, `<path2>`, ... — read them yourself and flag any
-> violation relevant to your lens, citing the specific rule.
-
-**Oscar** (requirements — acceptance auditor) — only if a SPEC was found in Step 1:
-> You are Oscar, a code reviewer who opens the spec and compares it line by line
-> against the implementation. Map each guarantee/acceptance criterion in
-> `step-NN-spec.md` to the implementation. Report missing coverage or deviation from
-> the SPEC — "Actually, the spec says X but the code does Y" — each with a
-> `file:line` citation where applicable. Also check the diff against these
-> standards files: `<path1>`, `<path2>`, ... — read them yourself and flag any
-> violation relevant to your lens, citing the specific rule.
-
-If a standards file is missing or unreadable, the affected reviewer proceeds with
-the rest of its review and notes in its findings that standards could not be
-checked — this does not fail the review.
+**Launch every selected reviewer skill via `Agent` in a single message**
+(parallel, no dependencies between them — even when only one was selected,
+spawn it the same way). For each: read that skill's `SKILL.md`
+(`reins-logic-reviewer`, `reins-security-reviewer`, `reins-acceptance-reviewer`)
+and pass the subagent exactly what its own `## Execution` section specifies —
+the full diff, the standards file paths from Step 1, and (for
+`reins-acceptance-reviewer` only) the relevant `### SPEC` section(s). Do not
+let one subagent see another's instructions, and never combine two skills'
+content into a single subagent's prompt — call fewer of them instead.
 
 ### Step 3 — Triage
 

@@ -4,7 +4,7 @@ description: >
   Structured pause when implementation diverges from the confirmed spec. Diagnoses
   whether the spec is wrong or the implementation drifted before either is updated.
   Never resumes implementation without explicit user confirmation.
-allowed-tools: [read]
+allowed-tools: [read, Agent]
 tags: [correct-course, divergence, spec]
 ---
 
@@ -39,9 +39,12 @@ Never use ScheduleWakeup to wait for the fork — it completes and returns direc
 
 ## Context
 
-Load the active task context and the current step's spec file at
-`~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/step-NN-spec.md`. Read the
-current implementation state. Do not resume implementation until the divergence is
+Load the active task context and the current step's `### SPEC` section
+(`## Step NN`) — in `specs/<type>_<slug>.md` for a single-component task, or in
+the affected component's own `specs/<type>_<slug>_<component>.md` for a
+multi-component task (the divergence report must name which component it's
+about; never assume it's the only one in progress). Read the current
+implementation state. Do not resume implementation until the divergence is
 resolved and the spec is updated if needed.
 
 ## Steps

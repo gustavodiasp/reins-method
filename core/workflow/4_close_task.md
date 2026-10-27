@@ -90,14 +90,19 @@ Present one primary suggestion and one alternative if the scope could be describ
 
 ## Step 6 — Link the PR in the SPEC
 
-Add the PR link to this task's spec directory at
-`~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/`:
+Add the PR link to the spec file for the component whose PR this is (or the
+single task file, if single-component):
+`~/.reins/user/projects/<project-slug>/specs/<type>_<slug>.md` or
+`specs/<type>_<slug>_<component>.md`:
 
-1. Identify the highest-numbered `step-NN-spec.md` for this task.
-2. Add the PR URL under a `## PR` section at the bottom of that file.
-3. Also record it in the context file's frontmatter (`prs`).
-4. This link is required for Step 9 to determine whether the PR has merged and the
-   `specs/<type>_<slug>/` directory can be deleted.
+1. Identify the highest-numbered `## Step NN` section **in that component's own
+   file** — never a sibling component's file.
+2. Add the PR URL under a `### PR` subsection at the bottom of that section.
+3. Also record it in the context file's frontmatter (`prs`), under that
+   component's key.
+4. This link is required for Step 9 to determine whether this component's PR
+   has merged and this component's spec file can be deleted — a sibling
+   component's file is never affected by this.
 
 ---
 
@@ -160,10 +165,19 @@ on the retro.
 
 After the PR comments are reviewed and I confirm the task is closed:
 
-1. Check `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>/` for this task:
-   - If the highest-numbered `step-NN-spec.md` has a `## PR` link, check if the PR is merged (via available tooling).
-   - **Before deleting anything**, list every file that would be deleted and explain why (PR merged, or explicitly authorized by you). Wait for your confirmation.
-   - Delete only the files (or the whole `specs/<type>_<slug>/` directory) you confirm.
+1. Check this task's spec file(s):
+   - **Before resolving any of these paths**: this step builds *delete* paths
+     from `<slug>` and, if multi-component, each `<component>` key in
+     `branches`. Confirm each is still a single lowercase word (letters,
+     digits, `-` only — see `2_new_task.md` Step 3 / `3_implement.md` Step 1)
+     before using it to build a path to delete. The context file is a plain
+     user-editable `.md` — never trust a value read from `branches` without
+     this check just because it was validated once, earlier, elsewhere.
+   - **Single-component**: `~/.reins/user/projects/<project-slug>/specs/<type>_<slug>.md` — if its highest-numbered `## Step NN` section has a `### PR` link, check if the PR is merged (via available tooling).
+   - **Multi-component**: one file per component, `specs/<type>_<slug>_<component>.md` — check **every** component's file the same way. Closing the task means every component is done; do not treat one component's merged PR as license to delete the others' files.
+   - **Also check for an orphaned pre-multi-component file**: `specs/<type>_<slug>.md` (no component suffix) can hold early steps from before a second component was added mid-task (see `core/templates/task.md`). If it exists alongside per-component files, it is part of this task's history too — include it in the same merged-PR check and deletion list, do not silently skip it because it doesn't match the `_<component>` pattern.
+   - **Before deleting anything**, list every file that would be deleted (one line per component, if multi-component, plus the orphaned file if present) and explain why for each — either "PR merged" or "explicitly authorized by you for this component." If any component's PR has not merged and you have not explicitly authorized deleting its file, stop and say which — do not delete any file, including a ready component's, until every component is either merged or individually authorized. Wait for your confirmation before deleting anything.
+   - Delete the file(s) once confirmed.
 
 2. Delete the active context file (`<type>_<slug>.md`) for this task.
 

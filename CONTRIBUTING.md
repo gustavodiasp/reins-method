@@ -49,8 +49,7 @@ reins-method/
 ├── VERSION                ← single source of truth for the version number
 ├── ADAPTERS.md            ← adapter pack contract and authoring guide
 ├── SKILLS.md              ← skill authoring guide
-├── HISTORIC_MODE.md       ← historic mode documentation
-└── MIGRATION.md           ← upgrade notes between versions
+└── HISTORIC_MODE.md       ← historic mode documentation
 ```
 
 ---

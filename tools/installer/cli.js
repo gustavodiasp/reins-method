@@ -50,6 +50,10 @@ async function printBanner() {
 }
 
 
+function getInitialAgentValues(currentAgents) {
+  return currentAgents.filter(a => AGENT_OPTIONS.some(o => o.value === a));
+}
+
 function readCurrentAgents() {
   const configPath = path.join(REINS_HOME, 'user', 'config.yaml');
   if (!fs.existsSync(configPath)) return [];
@@ -67,8 +71,7 @@ const AGENT_OPTIONS = [
   { value: 'copilot', label: 'GitHub Copilot CLI' },
   { value: 'codex', label: 'Codex CLI' },
   { value: 'gemini', label: 'Gemini CLI' },
-  { value: 'aider', label: 'Aider' },
-  { value: 'other', label: 'OpenCode / Cursor / Other' },
+  { value: 'other', label: 'Other' },
 ];
 
 async function runInstall() {
@@ -95,9 +98,13 @@ async function runInstall() {
     }
   }
 
+  const currentAgents = readCurrentAgents();
+  const initialValues = getInitialAgentValues(currentAgents);
+
   const agents = await clack.multiselect({
     message: 'Which AI coding agents do you use?',
     options: AGENT_OPTIONS,
+    initialValues,
     required: true,
   });
   if (clack.isCancel(agents)) {
@@ -158,7 +165,6 @@ async function runInstall() {
     '--non-interactive',
     `--from-package=${PKG_ROOT}`,
     ...agents.map(a => `--agent=${a}`),
-    `--standards=${wantsStandards ? 'yes' : 'no'}`,
     `--historic=${wantsHistoric ? 'on' : 'off'}`,
     `--language=${language || 'English'}`,
     `--doc-language=${docLanguage || 'English'}`,
@@ -205,8 +211,6 @@ async function runInstall() {
       'Then run:',
       '',
       '  reins status',
-      '',
-      'Optional companion tools: headroom, graphify — see README.md',
     ].join('\n'),
     'Done',
   );
@@ -262,7 +266,7 @@ async function runAgents() {
   );
 
   const currentAgents = readCurrentAgents();
-  const initialValues = currentAgents.filter(a => AGENT_OPTIONS.some(o => o.value === a));
+  const initialValues = getInitialAgentValues(currentAgents);
 
   const agents = await clack.multiselect({
     message: 'Which AI coding agents do you use?',

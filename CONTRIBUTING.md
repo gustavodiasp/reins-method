@@ -22,7 +22,19 @@ reins-method/
 │                              reins-system-architect, reins-senior-engineer,
 │                              reins-investigate, reins-correct-course, reins-faq,
 │                              reins-config, reins-remind)
-├── agents/                ← generated bridge file templates (README inside)
+├── agent-bridges/         ← explains the generated bridge files (README inside).
+│                              Renamed from `agents/` 2026-10-28: this repo folder
+│                              is documentation only — nothing here is ever copied
+│                              anywhere (install_core_files only copies core/, bin/,
+│                              tools/); the real runtime directory is
+│                              `~/.reins/agents/` (set by `AGENTS_DIR` in
+│                              `bin/reins`), which is untouched and NOT renamed —
+│                              renaming that would require a migration for every
+│                              installed user. The rename here just frees up the
+│                              word "agents" for #4 (multi-agent orchestrator pool)
+│                              to use for REINS's own internal role-scoped agents
+│                              without colliding in meaning with this folder. See
+│                              issue #4.
 ├── bin/reins              ← the CLI (bash, no runtime dependencies)
 ├── tools/
 │   ├── installer/
@@ -99,7 +111,7 @@ installed on the machine. For each configured agent, writes an import or inline
 reference into its native config file:
 
 - `import` mode (Claude Code, Gemini): native config contains `@~/.reins/agents/AGENT.md`
-- `inline` mode (Copilot, Codex, Aider): native config contains the full bridge
+- `inline` mode (Copilot, Codex, generic/other): native config contains the full bridge
   content, because these agents do not support file imports
 
 ### Version management
@@ -214,20 +226,6 @@ introduce any telemetry, remote calls, or data collection of any kind.
 - Changes to `tools/installer/cli.js` require Node ≥ 18.
 - Bump `VERSION` and `package.json` together. Do not push tags manually —
   the release pipeline handles npm publish on tag push via GitHub Actions.
-
----
-
-## Companion tools (optional)
-
-REINS works without additional dependencies. Two optional tools integrate with it:
-
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
-  compression for AI agents (works best with Claude Code; known Copilot limitations
-  — [#1](https://github.com/gustavodiasp/reins-method/issues/1))
-- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph;
-  `reins graphify` generates and stores the output outside the repo (code-only
-  extraction works without an API key; docs/papers require a separate LLM key
-  — [#2](https://github.com/gustavodiasp/reins-method/issues/2))
 
 ---
 

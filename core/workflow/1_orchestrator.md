@@ -108,12 +108,10 @@ measured, not theoretical.
 
 **Under demand (lazy):**
 - `2_new_task.md` → when starting new task
-  - Project map `graphify-out/GRAPH_REPORT.md` → if present, load at this point (architecture context matters for breakdown/planning, not for every session turn)
 - `3_implement.md` (adapter or core) → when entering development phase
   - Adapter standards (§3) + user standards / generic standards +
     project-level `standards.md` (§3.6, if present) → load at this point, not
     before
-  - Project map `graphify-out/GRAPH_REPORT.md` → if present and not already loaded this session
 - `core/skills/reins-code-review` → when invoked
   - Applicable standards (same resolution as §3, project-level included) →
     load at this point
@@ -121,16 +119,14 @@ measured, not theoretical.
 - Skills (`core/skills/`, `<adapter>/skills/`, `user/skills/`) → never proactively, only when explicitly invoked
 
 A session that never enters the development or review phase (a question answered by
-reading code, a one-off lookup) never pays the token cost of loading standards or
-the project map — §3's matching procedure itself is unchanged, only *when in the
-session* it runs.
+reading code, a one-off lookup) never pays the token cost of loading standards —
+§3's matching procedure itself is unchanged, only *when in the session* it runs.
 
 ## 6 — Workflow
 
 ```
 Task arrives → 2_new_task.md
   - Identify project + detect stack(s)
-  - Load project map (if exists)
   - Load adapter/generic standards
   - Understand task + epic
   - Optional: party-mode discussion

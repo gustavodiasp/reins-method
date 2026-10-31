@@ -15,18 +15,23 @@
 
 <p align="center">
   <a href="#quick-start"><img alt="Install" src="https://img.shields.io/badge/install-npx%20reins--method-orange?style=flat-square"></a>
-  <a href="#supported-agents"><img alt="Agents" src="https://img.shields.io/badge/agents-Claude%20%7C%20Gemini%20%7C%20Copilot%20%7C%20Codex%20%7C%20Aider-8A2BE2?style=flat-square"></a>
+  <a href="#supported-agents"><img alt="Agents" src="https://img.shields.io/badge/agents-Claude%20%7C%20Gemini%20%7C%20Copilot%20%7C%20Codex-8A2BE2?style=flat-square"></a>
   <a href="#"><img alt="Dependencies" src="https://img.shields.io/badge/dependencies-bash%20%2B%20git%20(installer%3A%20node)-4EAA25?style=flat-square&logo=gnu-bash&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-yellow?style=flat-square"></a>
 </p>
 
 # REINS Method
 
-**One install. Every project. Any AI agent.**
+**One install. Every project. Any coding agent.**
 
 A structured, SPEC-first AI pair programming workflow that lives in your home
 directory — never inside your repos — and activates automatically in every
-project you open, with any supported AI agent.
+project you open, with any supported coding agent.
+
+REINS is not itself a coding agent — it's a workflow layer that runs on top of
+the coding agent you already use. "Agent" below always means that underlying
+tool (Claude Code, Copilot, Gemini CLI, ...); REINS's own six expert personas
+are a separate concept, never called "agents," to avoid the ambiguity.
 
 ---
 
@@ -51,9 +56,10 @@ REINS solves all three.
 - **Automatic wiring, zero per-project setup** — install once in `~/.reins/` and
   every project you open gets the full workflow automatically. Nothing is added to
   your repos.
-- **Truly agent-agnostic** — Claude Code, GitHub Copilot CLI, Gemini CLI, Codex
-  CLI, Aider, OpenCode, Cursor. Switch agents anytime. Your workflow, standards,
-  and task history follow you.
+- **Agent-agnostic by design** — built to run on top of whichever coding agent
+  you already use, not tied to one vendor. See [Supported agents](#supported-agents)
+  for what's verified vs. documented-but-unverified today. Switch agents
+  anytime — your workflow, standards, and task history follow you.
 - **Context that persists across sessions and agents** — active tasks, specs, and
   decisions are saved between sessions in `~/.reins/user/projects/`. Open a project
   days later with a different agent and pick up exactly where you left off.
@@ -97,7 +103,7 @@ agent:  Detected stack: ruby (Gemfile) + node (package.json)
         Create a context file and start on step 1?
 ```
 
-The orchestrator instructions live in your AI agent's global config — every
+The orchestrator instructions live in your coding agent's global config — every
 project you open gets this behavior automatically, with no REINS files in the repo.
 
 ---
@@ -109,8 +115,8 @@ npx reins-method@latest install
 ```
 
 The setup wizard guides you through:
-- Pick your AI agent (Claude Code, GitHub Copilot CLI, Codex CLI, Gemini CLI,
-  Aider, OpenCode, Cursor, or other)
+- Pick your coding agent (Claude Code, GitHub Copilot CLI, Codex CLI, Gemini CLI,
+  or other)
 - Set your company and personal coding standards (optional — defaults work out of
   the box)
 - Enable Historic Mode for performance tracking (optional)
@@ -134,7 +140,7 @@ curl -fsSL https://raw.githubusercontent.com/gustavodiasp/reins-method/main/inst
 ### Install once, not per project
 
 `reins install` always installs to `~/.reins/`. REINS wires itself into each
-AI agent's *global* config (`~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, etc.),
+coding agent's *global* config (`~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, etc.),
 so every project you open automatically gets the workflow. One install covers
 every project on the machine, with every supported agent.
 
@@ -153,7 +159,7 @@ with `read -p` prompts.
 ~/.reins/
 ├── core/    ← workflow engine (updated via `reins update`)
 ├── user/    ← your config, standards, adapters, skills, project contexts, historic data
-└── agents/  ← generated bridge files, one per AI agent
+└── agents/  ← generated bridge files, one per coding agent
 ```
 
 - **`core/`** defines the workflow phases: `1_orchestrator.md` (read first every
@@ -163,8 +169,8 @@ with `read -p` prompts.
 - **`user/`** is yours. `reins update` never touches it. Holds your standards,
   adapters, custom skills, per-project task contexts/specs, and optional historic
   records.
-- **`agents/`** holds the generated files that each AI agent's native config
-  imports or references.
+- **`agents/`** holds the generated files that each coding agent's native config
+  imports or inlines.
 
 No REINS file is ever written into a project repository.
 
@@ -266,6 +272,12 @@ decision.
 adversarial parallel review (logic, security, requirements). Closes with a
 plain-language summary of what needs fixing before merge.
 
+> Both of the above spawn real independent subagents, not simulated personas —
+> they require your coding agent to support spawning subagents (e.g. Claude
+> Code's Task/Agent tool). On an agent without that support, these skills say
+> so plainly and refuse to fake it with a single-model simulation, rather than
+> silently giving a lower-quality result.
+
 **`reins-remind`** — if your agent drifts mid-session and stops applying your
 configured standards, invoke this. Output: *"Ops! Let me focus again!"* — the
 agent re-reads your standards and re-anchors on the workflow.
@@ -293,11 +305,11 @@ See [HISTORIC_MODE.md](HISTORIC_MODE.md).
 reins install              First-time setup (interactive wizard)
 reins update               Pull latest core, regenerate agent bridge files
 reins sync                 Regenerate agent bridges + skill registration (no git pull)
+reins agents               Update which AI agents you use and re-wire
 reins new-adapter <name>   Scaffold a new adapter pack
 reins new-skill <name>     Scaffold a new skill
-reins link-agents          Wire any newly-installed AI agents into existing bridges
+reins link-agents          Wire any newly-installed coding agents into existing bridges
 reins historic on|off      Enable/disable historic mode
-reins graphify             Run graphify and store output in ~/.reins (not the repo)
 reins status               Show installed version, agent, adapters, historic mode
 reins doctor               Validate the installation
 reins edit home            Open all of ~/.reins/ in your IDE
@@ -316,13 +328,23 @@ During `reins install` you can configure one or more agents at once — pick
 everything you use. Every `reins update` / `reins sync` re-wires all configured
 agents automatically:
 
-| Agent | Bridge mechanism |
-|---|---|
-| Claude Code | `~/.claude/CLAUDE.md` imports `~/.reins/agents/CLAUDE.md` |
-| Gemini CLI | `~/.gemini/GEMINI.md` imports `~/.reins/agents/GEMINI.md` |
-| GitHub Copilot CLI | `~/.copilot/instructions.md` references `~/.reins/agents/copilot-instructions.md` |
-| Codex CLI | `~/.codex/AGENTS.md` references `~/.reins/agents/AGENTS.md` |
-| Aider / OpenCode / Cursor / other | `~/AGENTS.md` references `~/.reins/agents/AGENTS.md` |
+| Agent | Bridge mechanism | Status |
+|---|---|---|
+| Claude Code | `~/.claude/CLAUDE.md` imports `~/.reins/agents/CLAUDE.md` | Tested |
+| GitHub Copilot CLI | `~/.copilot/copilot-instructions.md` inlines `~/.reins/agents/copilot-instructions.md` | Tested |
+| Codex CLI | `~/.codex/AGENTS.md` inlines `~/.reins/agents/AGENTS.md` | Tested |
+| Gemini CLI | `~/.gemini/GEMINI.md` imports `~/.reins/agents/GEMINI.md` | Documented, untested |
+| Other (generic) | `~/AGENTS.md` inlines `~/.reins/agents/AGENTS.md` | Documented, untested — works for any tool that reads a home-directory `AGENTS.md` by default |
+
+**Cursor has no bridge today** and isn't offered as an install option: it has
+no mechanism that reads a home-directory file automatically — its only global
+option is account-synced Settings UI ("User Rules"), which isn't a file REINS
+can write to, and its `AGENTS.md` support is project-root scoped only (with a
+currently-open upstream bug even there). Revisit if that changes.
+
+**VS Code Copilot Chat/Agent mode** is also not supported yet — tracked in
+[#5](https://github.com/gustavodiasp/reins-method/issues/5) (blocked on
+[#4](https://github.com/gustavodiasp/reins-method/issues/4)).
 
 The agent you mark as *primary* during setup is used by `reins status` and
 `reins doctor` — it doesn't restrict which agents get the workflow. If you
@@ -351,21 +373,6 @@ This unwires REINS from all configured agents and removes the CLI. By default,
 `~/.reins/` is left intact — your standards, adapters, skills, and project
 contexts are preserved. If you choose to delete `~/.reins/`, you are offered
 the option to back up your `user/` folder first.
-
----
-
-## Companion tools (optional)
-
-REINS works without additional dependencies. Two optional tools integrate with it
-if you choose to set them up:
-
-- **[headroom](https://github.com/chopratejas/headroom)** — token-efficient context
-  compression for AI agents (works best with Claude Code; known Copilot limitations
-  — [#1](https://github.com/gustavodiasp/reins-method/issues/1))
-- **[graphify](https://github.com/safishamsi/graphify)** — codebase knowledge graph;
-  use `reins graphify` to generate and store it outside the repo (code-only
-  extraction works without an API key; docs/papers require a separate LLM key
-  — [#2](https://github.com/gustavodiasp/reins-method/issues/2))
 
 ---
 

@@ -15,7 +15,7 @@
     "tools/installer",
     "bin",
     "core",
-    "agents",
+    "agent-bridges",
     "*.md",
     "LICENSE"
   ],

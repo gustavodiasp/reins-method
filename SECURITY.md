@@ -22,5 +22,5 @@ REINS Method is a local CLI tool. It reads and writes files under `~/.reins/` an
 wires into AI agent config files on the user's machine. It makes no network requests
 beyond downloading its own releases from GitHub during `reins install` / `reins update`.
 
-Out of scope: issues in third-party tools (graphify, headroom, the AI agents
-themselves). Report those to their respective maintainers.
+Out of scope: issues in third-party tools (the coding agents themselves).
+Report those to their respective maintainers.

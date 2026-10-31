@@ -34,18 +34,23 @@ REINS_HOME="${REINS_HOME:-$HOME/.reins}"
 
 command -v git >/dev/null 2>&1 || { echo "Error: git is required." >&2; exit 1; }
 
-if [ -d "$REINS_HOME/.git" ]; then
-  echo "REINS Method already installed at $REINS_HOME — pulling latest core..."
-  git -C "$REINS_HOME" pull --ff-only
+echo ""
+if [ -x "$REINS_HOME/bin/reins" ]; then
+  echo "REINS Method already installed at $REINS_HOME — updating..."
+  "$REINS_HOME/bin/reins" update
 elif [ -e "$REINS_HOME" ]; then
-  echo "Error: $REINS_HOME exists and is not a REINS git checkout. Move it aside first." >&2
+  echo "Error: $REINS_HOME exists but doesn't look like a REINS installation. Move it aside first." >&2
   exit 1
 else
-  echo "Cloning REINS Method to $REINS_HOME..."
-  git clone --depth 1 "$REPO_URL" "$REINS_HOME"
+  # Clone to a temp dir, never directly into $REINS_HOME: cloning in place
+  # would leave .git/, .github/, and every root dev file (README.md,
+  # MIGRATION.md, etc.) sitting permanently inside the live install, since
+  # install_core_files() — the only thing that strips those — only runs when
+  # $CORE_DIR doesn't already exist, which a direct clone defeats.
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/reins-install.XXXXXX")"
+  trap 'rm -rf "$tmp_dir"' EXIT
+  echo "Downloading REINS Method..."
+  git clone --depth 1 "$REPO_URL" "$tmp_dir" >/dev/null
+  chmod +x "$tmp_dir/bin/reins"
+  "$tmp_dir/bin/reins" install --from-package="$tmp_dir"
 fi
-
-chmod +x "$REINS_HOME/bin/reins"
-
-echo ""
-"$REINS_HOME/bin/reins" install

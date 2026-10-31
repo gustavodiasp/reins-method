@@ -135,6 +135,29 @@ config_set_agents() {
   done
 }
 
+config_add_adapter() {
+  # config_add_adapter <name> -> adds <name> to the adapters: YAML list,
+  # moving the whole list to the end of the file (same strip-then-rewrite
+  # pattern as config_set_agents) instead of blindly appending at EOF, which
+  # could land the new entry inside whatever key now happens to be last.
+  local name="$1" existing a
+  [ -n "$name" ] || return 0
+  mkdir -p "$USER_DIR"
+  touch "$CONFIG"
+  existing="$(config_adapters)"
+  printf '%s\n' "$existing" | grep -qxF "$name" && return 0
+  awk '
+    /^adapters:/ { skip=1; next }
+    /^[a-zA-Z_]/ { skip=0 }
+    !skip { print }
+  ' "$CONFIG" > "$CONFIG.tmp" && mv "$CONFIG.tmp" "$CONFIG"
+  printf 'adapters:\n' >> "$CONFIG"
+  while IFS= read -r a; do
+    [ -n "$a" ] && printf '  - %s\n' "$a" >> "$CONFIG"
+  done <<< "$existing"
+  printf '  - %s\n' "$name" >> "$CONFIG"
+}
+
 download_and_extract() {
   # download_and_extract <source-url> -> prints path to extracted dir; caller must rm -rf dirname
   local source_url="$1"
@@ -172,6 +195,20 @@ install_core_files() {
   cp    "$src/package.json" "$REINS_HOME/package.json"
   [ -f "$src/VERSION" ] && cp "$src/VERSION" "$REINS_HOME/VERSION" || true
   chmod +x "$REINS_HOME/bin/reins" 2>/dev/null || true
+}
+
+_backtick_fence() {
+  # Prints a backtick fence one character longer than the longest run of
+  # backticks already present in $1 (minimum 3) — so wrapping arbitrary
+  # content (which may itself contain ``` fences) in this fence never closes
+  # early. Markdown's own rule: an outer fence must be longer than any fence
+  # nested inside it.
+  local content="$1" max=2 run len
+  while IFS= read -r run; do
+    len=${#run}
+    [ "$len" -gt "$max" ] && max=$len
+  done < <(grep -o '`\+' <<< "$content")
+  printf '%*s' "$((max + 1))" '' | tr ' ' '`'
 }
 
 ensure_managed_block() {
@@ -246,11 +283,54 @@ agent_bridge_target() {
   case "$1" in
     claude-code) echo "$AGENTS_DIR/CLAUDE.md:$HOME/.claude/CLAUDE.md:import" ;;
     gemini)      echo "$AGENTS_DIR/GEMINI.md:$HOME/.gemini/GEMINI.md:import" ;;
-    copilot)     echo "$AGENTS_DIR/copilot-instructions.md:$HOME/.copilot/instructions.md:inline" ;;
+    copilot)     echo "$AGENTS_DIR/copilot-instructions.md:$HOME/.copilot/copilot-instructions.md:inline" ;;
     codex)       echo "$AGENTS_DIR/AGENTS.md:$HOME/.codex/AGENTS.md:inline" ;;
-    aider|opencode|other)
-                 echo "$AGENTS_DIR/AGENTS.md:$HOME/AGENTS.md:inline" ;;
+    other)       echo "$AGENTS_DIR/AGENTS.md:$HOME/AGENTS.md:inline" ;;
     *) return 1 ;;
+  esac
+}
+
+_prompt_agent_selection() {
+  # Prints the chosen agent keys, one per line, to stdout — and ONLY that, to
+  # stdout. Callers capture this function's stdout via process substitution
+  # (`< <(_prompt_agent_selection)`), so the menu text itself must go to
+  # stderr or it gets captured into the result alongside the real keys.
+  # Shared by cmd_install's interactive wizard and cmd_agents — keeps the
+  # menu text and number-to-key mapping from drifting out of sync.
+  log "? Which AI coding agents do you use?" >&2
+  log "  1) Claude Code" >&2
+  log "  2) GitHub Copilot CLI" >&2
+  log "  3) Codex CLI" >&2
+  log "  4) Gemini CLI" >&2
+  log "  5) Other" >&2
+  local agent_choices agent_nums num out=()
+  read -r -p "Numbers separated by spaces [1]: " agent_choices
+  agent_choices="${agent_choices:-1}"
+  IFS=' ,' read -ra agent_nums <<< "$agent_choices"
+  for num in "${agent_nums[@]}"; do
+    case "$num" in
+      1) out+=("claude-code") ;;
+      2) out+=("copilot") ;;
+      3) out+=("codex") ;;
+      4) out+=("gemini") ;;
+      5) out+=("other") ;;
+    esac
+  done
+  [ "${#out[@]}" -eq 0 ] && out=("other")
+  printf '%s\n' "${out[@]}"
+}
+
+agent_label() {
+  # agent_label <agent> -> prints its human-readable display name. Single
+  # source of truth for every place that needs to show an agent key to the
+  # user (wire_all_agents, cmd_agents_set's unwire log, etc.) — keeps them
+  # from drifting out of sync with each other as agents are added/removed.
+  case "$1" in
+    claude-code) echo "Claude Code" ;;
+    gemini)      echo "Gemini CLI" ;;
+    copilot)     echo "GitHub Copilot CLI" ;;
+    codex)       echo "Codex CLI" ;;
+    *)           echo "Other" ;;
   esac
 }
 
@@ -281,45 +361,78 @@ wire_all_agents() {
     _entry="$(agent_bridge_target "$_agent" 2>/dev/null)" || continue
     local _bridge="${_entry%%:*}" _rest="${_entry#*:}"
     local _native="${_rest%%:*}" _syntax="${_rest##*:}"
-    local _label _body
-    case "$_agent" in
-      claude-code) _label="Claude Code"; _body="$body_import" ;;
-      gemini)      _label="Gemini CLI"; _body="$body_import" ;;
-      copilot)     _label="GitHub Copilot CLI"; _body="$body_import" ;;
-      codex)       _label="Codex CLI"; _body="$body_inline" ;;
-      aider)       _label="Aider"; _body="$body_inline" ;;
-      opencode)    _label="OpenCode / Cursor"; _body="$body_inline" ;;
-      *)           _label="Other"; _body="$body_inline" ;;
-    esac
+    local _label="$(agent_label "$_agent")" _body
+    if [ "$_syntax" = "import" ]; then _body="$body_import"; else _body="$body_inline"; fi
 
-    # Write bridge file with appropriate body
-    if [ "$_syntax" = "import" ]; then
-      printf '%s\n' "$_body" > "$_bridge"
-    else
-      printf '%s\n' "$_body" > "$_bridge"
-    fi
+    printf '%s\n' "$_body" > "$_bridge"
     wire_block "$_bridge" "$_native" "$_syntax"
     wired+=("$_label -> $_native")
   done < <(config_get_agents)
 
+  if [ "${#wired[@]}" -eq 0 ]; then
+    log "⚠ No agents could be wired — none of the configured agent keys are recognized. Run 'reins agents' to reconfigure."
+    return 0
+  fi
   local w
   for w in "${wired[@]}"; do
     log "Wired: $w"
   done
 }
 
+_all_known_natives() {
+  # Every native config path REINS can currently write a managed block into.
+  # Single source of truth for unwire_all_agents and _unwire_unneeded_natives
+  # — keeps the two sweeps from drifting out of sync with each other.
+  printf '%s\n' \
+    "$HOME/.claude/CLAUDE.md" "$HOME/.gemini/GEMINI.md" \
+    "$HOME/.copilot/copilot-instructions.md" \
+    "$HOME/.codex/AGENTS.md" "$HOME/AGENTS.md"
+}
+
+_native_label() {
+  # _native_label <native-path> -> prints the human-readable agent label for
+  # a known native path, or the raw path itself if it matches no known agent
+  # key (shouldn't happen given _all_known_natives, but a safe fallback).
+  local native="$1" _k _e _n
+  for _k in claude-code gemini copilot codex other; do
+    _e="$(agent_bridge_target "$_k" 2>/dev/null)" || continue
+    _n="${_e#*:}"; _n="${_n%%:*}"
+    [ "$_n" = "$native" ] && { agent_label "$_k"; return; }
+  done
+  printf '%s' "$native"
+}
+
+_unwire_unneeded_natives() {
+  # _unwire_unneeded_natives <newline-list-of-still-needed-native-paths>
+  # Removes the REINS managed block from any currently-known native target
+  # NOT in the given keep-list. Sweeps by native path rather than by agent
+  # key, so a stale config entry for a since-removed agent key (e.g. a
+  # leftover "aider"/"opencode" selection) still gets cleaned up correctly
+  # even though agent_bridge_target() no longer recognizes that key.
+  local keep="$1" t
+  while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    printf '%s' "$keep" | grep -qxF "$t" && continue
+    if [ -f "$t" ] && grep -qF "REINS:BEGIN" "$t" 2>/dev/null; then
+      remove_managed_block "$t"
+      log "Unwired: $(_native_label "$t") ($t)"
+    fi
+  done < <(_all_known_natives)
+}
+
 unwire_all_agents() {
   # Removes the REINS managed block from every native config it may have been
-  # wired into (no-op for files without a managed block).
+  # wired into (no-op for files without a managed block). Always also sweeps
+  # the old, wrong Copilot path ($HOME/.copilot/instructions.md) defensively,
+  # independent of the one-time migration in generate_bridges, since full
+  # uninstall is a separate code path that should never leave that behind.
   local t
-  for t in "$HOME/.claude/CLAUDE.md" "$HOME/.gemini/GEMINI.md" \
-           "$HOME/.copilot/instructions.md" "$HOME/.codex/AGENTS.md" \
-           "$HOME/AGENTS.md"; do
+  while IFS= read -r t; do
     if [ -f "$t" ] && grep -qF "REINS:BEGIN" "$t" 2>/dev/null; then
       remove_managed_block "$t"
       log "Removed REINS block from $t"
     fi
-  done
+  done < <(_all_known_natives; printf '%s\n' "$HOME/.copilot/instructions.md")
 }
 
 collect_skills() {
@@ -390,8 +503,6 @@ cleanup_skill_links() {
   [ -d "$skills_dir" ] || return 0
   find "$skills_dir" -maxdepth 1 -type l -name 'reins-*' -exec rm -f {} +
 }
-
-cleanup_claude_skill_links() { cleanup_skill_links "$HOME/.claude/skills"; }
 
 _sync_skill_symlinks() {
   # _sync_skill_symlinks <skills-dir> — refreshes reins-* symlinks in the given dir
@@ -474,7 +585,7 @@ generate_bridges() {
 "
   done < <(collect_skills)
 
-  # Body with @-references (for import-capable agents: Claude Code, Gemini, Copilot)
+  # Body with @-references (for import-capable agents: Claude Code, Gemini)
   local body_import
   body_import=$(cat <<EOF
 # REINS Method — Agent Bridge
@@ -505,7 +616,7 @@ ${skills_md:-(none)}
 EOF
 )
 
-  # Body with inline content (for non-import agents: Codex, Aider, OpenCode)
+  # Body with inline content (for non-import agents: Copilot, Codex, generic/other)
   local body_inline
   local orch_content comp_content personal_content
 
@@ -513,6 +624,31 @@ EOF
   orch_content="$(cat "${CORE_DIR}/workflow/1_orchestrator.md" 2>/dev/null)" || { err "Failed to read 1_orchestrator.md for inline bridge"; return 1; }
   comp_content="$(cat "${USER_DIR}/standards/company.md" 2>/dev/null)" || { err "Failed to read company.md for inline bridge"; return 1; }
   personal_content="$(cat "${USER_DIR}/standards/personal.md" 2>/dev/null)" || { err "Failed to read personal.md for inline bridge"; return 1; }
+
+  # company.md/personal.md are user-edited free text; a literal REINS managed-
+  # block marker inside them would corrupt the *next* regeneration (the
+  # marker-scanning in ensure_managed_block_from_file/remove_managed_block
+  # matches on the first occurrence, not knowing which one is "real"). Fail
+  # loudly now rather than silently writing a file that breaks the next
+  # `reins update`.
+  if printf '%s' "$comp_content" | grep -qF -e '<!-- REINS:BEGIN -->' -e '<!-- REINS:END -->'; then
+    err "~/.reins/user/standards/company.md contains a literal 'REINS:BEGIN'/'REINS:END' marker — remove it, it breaks bridge regeneration."
+    return 1
+  fi
+  if printf '%s' "$personal_content" | grep -qF -e '<!-- REINS:BEGIN -->' -e '<!-- REINS:END -->'; then
+    err "~/.reins/user/standards/personal.md contains a literal 'REINS:BEGIN'/'REINS:END' marker — remove it, it breaks bridge regeneration."
+    return 1
+  fi
+
+  # Each embedded block gets its own fence, one backtick longer than the
+  # longest run of backticks already inside that content — otherwise content
+  # containing a literal ``` (core/workflow/1_orchestrator.md's own workflow
+  # diagrams do, guaranteed, every run) closes the fence early and scrambles
+  # every section after it.
+  local orch_fence comp_fence personal_fence
+  orch_fence="$(_backtick_fence "$orch_content")"
+  comp_fence="$(_backtick_fence "$comp_content")"
+  personal_fence="$(_backtick_fence "$personal_content")"
 
   body_inline=$(cat <<EOF
 # REINS Method — Agent Bridge (Inline)
@@ -522,21 +658,21 @@ edit \`~/.reins/user/config.yaml\` and re-run \`reins update\` instead.
 
 ## Orchestrator (read first)
 
-\`\`\`
+${orch_fence}
 ${orch_content}
-\`\`\`
+${orch_fence}
 
 ## Company standards
 
-\`\`\`
+${comp_fence}
 ${comp_content}
-\`\`\`
+${comp_fence}
 
 ## Personal standards
 
-\`\`\`
+${personal_fence}
 ${personal_content}
-\`\`\`
+${personal_fence}
 
 ## Active adapters
 ${active_adapters:-(none configured — generic conventions only)}
@@ -557,11 +693,28 @@ EOF
   # Write bridge files
   printf '%s\n' "$body_import" > "$AGENTS_DIR/CLAUDE.md"
   printf '%s\n' "$body_import" > "$AGENTS_DIR/GEMINI.md"
-  printf '%s\n' "$body_import" > "$AGENTS_DIR/COPILOT.md"
   printf '%s\n' "$body_inline" > "$AGENTS_DIR/AGENTS.md"
-  printf '%s\n' "$body_import" > "$AGENTS_DIR/copilot-instructions.md"
+  printf '%s\n' "$body_inline" > "$AGENTS_DIR/copilot-instructions.md"
 
   wire_all_agents "$body_import" "$body_inline"
+
+  # One-time migration: versions before this fix wired GitHub Copilot CLI into
+  # the wrong file ($HOME/.copilot/instructions.md instead of
+  # .../copilot-instructions.md). wire_all_agents only ever writes the new,
+  # correct path, so without this the old one is left behind with a stale
+  # managed block forever on every normal update/sync — only a full uninstall
+  # (unwire_all_agents) would have caught it otherwise.
+  local _old_copilot="$HOME/.copilot/instructions.md"
+  if [ -f "$_old_copilot" ] && grep -qF "REINS:BEGIN" "$_old_copilot" 2>/dev/null; then
+    remove_managed_block "$_old_copilot"
+    log "Migrated: removed stale REINS block from $_old_copilot (now $HOME/.copilot/copilot-instructions.md)"
+  fi
+
+  # Same migration, for the generated bridge file itself: versions before this
+  # fix also wrote a since-abandoned $AGENTS_DIR/COPILOT.md (superseded by
+  # copilot-instructions.md above) that nothing ever cleaned up.
+  [ -f "$AGENTS_DIR/COPILOT.md" ] && rm -f "$AGENTS_DIR/COPILOT.md"
+
   sync_skills
 
   log "Bridge files regenerated in $AGENTS_DIR"
@@ -574,13 +727,12 @@ EOF
 cmd_install() {
   print_banner
   local non_interactive=0
-  local arg_agents=() arg_standards="" arg_historic="" arg_adapter=""
+  local arg_agents=() arg_historic="" arg_adapter=""
   local arg_language="" arg_doc_language="" arg_from_package=""
   for arg in "$@"; do
     case "$arg" in
       --non-interactive)  non_interactive=1 ;;
       --agent=*)          arg_agents+=("${arg#--agent=}") ;;
-      --standards=*)      arg_standards="${arg#--standards=}" ;;
       --historic=*)       arg_historic="${arg#--historic=}" ;;
       --adapter=*)        arg_adapter="${arg#--adapter=}" ;;
       --language=*)       arg_language="${arg#--language=}" ;;
@@ -605,7 +757,12 @@ cmd_install() {
   # When run via `curl | bash`, stdin is the piped script, not a terminal, so
   # `read -p` below would fail instantly. Re-attach stdin to the controlling
   # terminal if one is available so the wizard can still prompt interactively.
-  if [ "$non_interactive" -eq 0 ] && [ ! -t 0 ] && [ -e /dev/tty ]; then
+  # /dev/tty existing doesn't mean it's openable (no controlling terminal at
+  # all, e.g. some CI/container contexts) — probe silently first (a bare
+  # `exec < /dev/tty` would print its own "Device not configured" diagnostic
+  # on failure *before* a trailing `2>/dev/null` gets a chance to apply) and
+  # only re-attach if the probe actually succeeds.
+  if [ "$non_interactive" -eq 0 ] && [ ! -t 0 ] && [ -e /dev/tty ] && { : < /dev/tty; } 2>/dev/null; then
     exec < /dev/tty
   fi
 
@@ -627,29 +784,25 @@ cmd_install() {
       selected_agents=("other")
     fi
   else
-    log "? Which AI coding agents do you use?"
-    log "  (REINS wires every agent it detects on this machine automatically.)"
-    log "  1) Claude Code"
-    log "  2) GitHub Copilot CLI"
-    log "  3) Codex CLI"
-    log "  4) Gemini CLI"
-    log "  5) Aider"
-    log "  6) OpenCode / Cursor / Other"
-    read -r -p "Numbers separated by spaces [1]: " agent_choices
-    agent_choices="${agent_choices:-1}"
-    IFS=' ,' read -ra agent_nums <<< "$agent_choices"
-    for num in "${agent_nums[@]}"; do
-      case "$num" in
-        1) selected_agents+=("claude-code") ;;
-        2) selected_agents+=("copilot") ;;
-        3) selected_agents+=("codex") ;;
-        4) selected_agents+=("gemini") ;;
-        5) selected_agents+=("aider") ;;
-        6) selected_agents+=("other") ;;
-      esac
-    done
-    [ "${#selected_agents[@]}" -eq 0 ] && selected_agents=("other")
+    # mapfile is bash 4+; macOS ships bash 3.2, so read into the array by hand.
+    selected_agents=()
+    while IFS= read -r _sa_line; do
+      selected_agents+=("$_sa_line")
+    done < <(_prompt_agent_selection)
   fi
+
+  # Re-running install (fresh config or not) must not orphan a previously
+  # wired native block the new selection no longer needs — same sweep used by
+  # `reins agents`/`reins agents-set`. Safe on a truly fresh install too: no
+  # native file has a REINS block yet, so the sweep is a no-op.
+  local _new_natives="" _ia _ie _in
+  for _ia in "${selected_agents[@]}"; do
+    _ie="$(agent_bridge_target "$_ia" 2>/dev/null)" || continue
+    _in="${_ie#*:}"; _in="${_in%%:*}"
+    _new_natives="${_new_natives}${_in}"$'\n'
+  done
+  _unwire_unneeded_natives "$_new_natives"
+
   config_set_agents "${selected_agents[@]}"
 
   local language doc_language
@@ -744,11 +897,7 @@ EOF
     adapter_name="$(basename "$adapter_path")"
     mkdir -p "$USER_DIR/adapters"
     cp -R "$adapter_path" "$USER_DIR/adapters/$adapter_name"
-    if grep -qE "^adapters:" "$CONFIG" 2>/dev/null; then
-      printf '  - %s\n' "$adapter_name" >> "$CONFIG"
-    else
-      printf 'adapters:\n  - %s\n' "$adapter_name" >> "$CONFIG"
-    fi
+    config_add_adapter "$adapter_name"
     log "Adapter '$adapter_name' installed."
   fi
 
@@ -782,8 +931,6 @@ EOF
   log ""
   log "REINS Method installed to $REINS_HOME"
   log "Run: source ~/.zshrc (or restart your terminal) to activate the 'reins' command"
-  log ""
-  log "Optional companion tools: headroom, graphify — see README.md"
   log ""
   log "Getting started: reins status"
 }
@@ -866,11 +1013,7 @@ personal style preferences (→ personal.md).
 EOF
   log "Adapter scaffolded at $dir"
   log "Edit ADAPTER.md (set 'stacks'), then standards/floor.md."
-  if grep -qE "^adapters:" "$CONFIG" 2>/dev/null; then
-    printf '  - %s\n' "$name" >> "$CONFIG"
-  else
-    printf 'adapters:\n  - %s\n' "$name" >> "$CONFIG"
-  fi
+  config_add_adapter "$name"
   generate_bridges
 }
 
@@ -945,79 +1088,6 @@ _open_in_editor() {
   fi
 }
 
-_install_graphify_dep() {
-  # pipx is the correct way to install Python CLI tools on macOS + Homebrew.
-  # pip --user is the fallback for Linux or systems without pipx.
-  local ok=0
-  if command -v pipx >/dev/null 2>&1; then
-    log "Using pipx (recommended on macOS)..."
-    pipx install graphifyy && ok=1
-  elif command -v pip3 >/dev/null 2>&1; then
-    pip3 install --user graphifyy && ok=1
-  elif command -v pip >/dev/null 2>&1; then
-    pip install --user graphifyy && ok=1
-  else
-    err "Neither pipx nor pip found."
-    err "Install graphify manually: brew install pipx && pipx install graphifyy"
-    return 1
-  fi
-  return $((1 - ok))
-}
-
-cmd_graphify() {
-  local project_root
-  if ! project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
-    project_root="$(pwd)"
-  fi
-
-  local slug
-  slug="$(_compute_project_slug "$project_root")"
-
-  if ! command -v graphify >/dev/null 2>&1; then
-    if [ -t 0 ]; then
-      read -r -p "graphify is not installed. Install it now? [y/N] " yn
-      case "$yn" in
-        [yY]*)
-          log "Installing graphify..."
-          _install_graphify_dep || die "Installation failed."
-          ;;
-        *) die "graphify is not installed. Run: brew install pipx && pipx install graphifyy" ;;
-      esac
-    else
-      die "graphify is not installed. Run: brew install pipx && pipx install graphifyy"
-    fi
-  fi
-
-  # Note: graphify uses raw shell env vars (ANTHROPIC_API_KEY, OPENAI_API_KEY,
-  # GEMINI_API_KEY, ...) for semantic extraction of docs and papers — not any
-  # IDE's logged-in session. Projects with code files only work without a key.
-  log "Note: graphify reads API keys from your shell environment, not your IDE session."
-  log "  If your project has docs or papers, export a key before running:"
-  log "    export ANTHROPIC_API_KEY=<your-key>  → reins graphify --backend claude"
-  log "    export OPENAI_API_KEY=<your-key>     → reins graphify --backend openai"
-  log ""
-
-  local dest_parent="$USER_DIR/projects/$slug"
-  mkdir -p "$dest_parent"
-  printf '%s\n' "$project_root" > "$dest_parent/.reins-project"
-
-  log "Project: $slug ($project_root)"
-  log "Output:  $dest_parent/graphify-out"
-  log ""
-
-  graphify extract "$project_root" --out "$dest_parent" "$@"
-
-  if [ -f "$dest_parent/graphify-out/graph.json" ]; then
-    log ""
-    log "Clustering communities and generating GRAPH_REPORT.md..."
-    graphify cluster-only "$dest_parent" "$@" \
-      && log "" \
-      && log "Done. GRAPH_REPORT.md stored at $dest_parent/graphify-out/GRAPH_REPORT.md" \
-      && log "REINS will pick it up automatically at the next session start." \
-      || log "⚠ cluster-only step failed — run manually: graphify cluster-only $dest_parent"
-  fi
-}
-
 cmd_agents() {
   # Delegate to Node/clack UI if available; bash wizard otherwise.
   local cli="$REINS_HOME/tools/installer/cli.js"
@@ -1027,33 +1097,28 @@ cmd_agents() {
   fi
   # bash fallback (no Node)
   print_banner
-  if [ ! -t 0 ] && [ -e /dev/tty ]; then exec < /dev/tty; fi
+  # /dev/tty existing doesn't mean it's openable (no controlling terminal —
+  # CI, piped automation) — probe silently first, same reasoning as
+  # cmd_install's identical guard, then only re-attach if it would succeed.
+  if [ ! -t 0 ] && [ -e /dev/tty ] && { : < /dev/tty; } 2>/dev/null; then exec < /dev/tty; fi
   local current
   current="$(config_get_agents | tr '\n' ' ' | sed 's/ $//')"
   [ -n "$current" ] && log "Current agents: $current"
   log ""
-  log "? Which AI coding agents do you use?"
-  log "  1) Claude Code"
-  log "  2) GitHub Copilot CLI"
-  log "  3) Codex CLI"
-  log "  4) Gemini CLI"
-  log "  5) Aider"
-  log "  6) OpenCode / Cursor / Other"
-  read -r -p "Numbers separated by spaces [1]: " agent_choices
-  agent_choices="${agent_choices:-1}"
-  IFS=' ,' read -ra agent_nums <<< "$agent_choices"
-  local selected_agents=()
-  for num in "${agent_nums[@]}"; do
-    case "$num" in
-      1) selected_agents+=("claude-code") ;;
-      2) selected_agents+=("copilot") ;;
-      3) selected_agents+=("codex") ;;
-      4) selected_agents+=("gemini") ;;
-      5) selected_agents+=("aider") ;;
-      6) selected_agents+=("other") ;;
-    esac
+  # mapfile is bash 4+; macOS ships bash 3.2, so read into the array by hand.
+  local selected_agents=() _sa_line
+  while IFS= read -r _sa_line; do
+    selected_agents+=("$_sa_line")
+  done < <(_prompt_agent_selection)
+
+  local new_natives="" _a _e _n
+  for _a in "${selected_agents[@]}"; do
+    _e="$(agent_bridge_target "$_a" 2>/dev/null)" || continue
+    _n="${_e#*:}"; _n="${_n%%:*}"
+    new_natives="${new_natives}${_n}"$'\n'
   done
-  [ "${#selected_agents[@]}" -eq 0 ] && selected_agents=("other")
+  _unwire_unneeded_natives "$new_natives"
+
   config_set_agents "${selected_agents[@]}"
   generate_bridges
   log "Agent selection updated."
@@ -1078,27 +1143,7 @@ cmd_agents_set() {
     new_natives="${new_natives}${_n}"$'\n'
   done
 
-  # Unwire agents being removed, skip if their native file is still needed
-  while IFS= read -r old_agent; do
-    [ -n "$old_agent" ] || continue
-    _e="$(agent_bridge_target "$old_agent" 2>/dev/null)" || continue
-    _n="${_e#*:}"; _n="${_n%%:*}"
-    printf '%s' "$new_natives" | grep -qxF "$_n" && continue
-    if [ -f "$_n" ] && grep -qF "REINS:BEGIN" "$_n" 2>/dev/null; then
-      remove_managed_block "$_n"
-      local _label
-      case "$old_agent" in
-        claude-code) _label="Claude Code" ;;
-        gemini)      _label="Gemini CLI" ;;
-        copilot)     _label="GitHub Copilot CLI" ;;
-        codex)       _label="Codex CLI" ;;
-        aider)       _label="Aider" ;;
-        opencode)    _label="OpenCode / Cursor" ;;
-        *)           _label="Other" ;;
-      esac
-      log "Unwired: $_label ($_n)"
-    fi
-  done < <(config_get_agents)
+  _unwire_unneeded_natives "$new_natives"
 
   config_set_agents "${selected_agents[@]}"
   generate_bridges
@@ -1243,7 +1288,7 @@ cmd_doctor() {
           err "$native does not exist — run 'reins update'"; problems=$((problems+1))
         fi
       else
-        err "unknown agent '$agent' in config"; problems=$((problems+1))
+        err "unknown agent '$agent' in config — run 'reins agents' to reconfigure"; problems=$((problems+1))
       fi
     done <<< "$configured_agents"
   fi
@@ -1341,7 +1386,7 @@ REINS Method CLI
 Usage:
   reins install              First-time setup (interactive wizard)
   reins install --non-interactive --agent=<id> [--agent=<id> ...]
-                              [--standards=yes|no] [--historic=on|off]
+                              [--historic=on|off]
                               [--adapter=<path>] [--language=<lang>]
                               [--doc-language=<lang>]
                              Non-interactive setup, driven by flags
@@ -1355,7 +1400,6 @@ Usage:
   reins link-agents           Wire any newly-installed AI agents into existing bridges
   reins historic on|off       Enable/disable historic mode
   reins status                Show installed version, agent, adapters, historic mode
-  reins graphify              Run graphify and store output in ~/.reins (not the repo)
   reins doctor                Validate the installation
   reins uninstall             Unhook REINS from your agent/shell, optionally delete ~/.reins
 EOF
@@ -1376,7 +1420,6 @@ main() {
     link-agents) cmd_link_agents "$@" ;;
     historic)    cmd_historic "$@" ;;
     status)      cmd_status "$@" ;;
-    graphify)    cmd_graphify "$@" ;;
     doctor)      cmd_doctor "$@" ;;
     uninstall)   cmd_uninstall "$@" ;;
     -h|--help|help|"") usage ;;

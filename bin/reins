@@ -111,8 +111,62 @@ config_adapters() {
   awk '/^adapters:/{found=1; next} /^[a-zA-Z]/{found=0} found && /^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*/,""); print}' "$CONFIG"
 }
 
+check_adapter_stack_overlaps() {
+  # Prints one warning line per pair of configured adapters whose ADAPTER.md
+  # `stacks:` lists share a stack. The orchestrator loads every matching
+  # adapter for a detected stack with no conflict check between them (the
+  # existing Conflict rule only covers personal/project standards vs. an
+  # adapter's floor.md) — two adapters silently both load today, and their
+  # floor.md conventions can disagree with nothing surfacing that until a
+  # human notices. Deliberately stops at this syntactic check: `stacks:` is
+  # a plain comma list, safe to compare; floor.md is free-form prose, and
+  # judging whether two of those actually conflict is not a test this
+  # function can make.
+  local adapters
+  adapters="$(config_adapters)"
+  [ -n "$adapters" ] || return 0
+
+  local names=()
+  local stacks=()
+  local name
+  while IFS= read -r name; do
+    [ -n "$name" ] || continue
+    local adapter_md="$USER_DIR/adapters/$name/ADAPTER.md"
+    [ -f "$adapter_md" ] || continue
+    local inside stack
+    inside="$(grep -E '^stacks:' "$adapter_md" | head -n1 | sed -E 's/^stacks:[[:space:]]*\[([^]]*)\].*/\1/')"
+    [ -n "$inside" ] || continue
+    local stack_list
+    IFS=',' read -ra stack_list <<< "$inside"
+    for stack in "${stack_list[@]}"; do
+      stack="$(printf '%s' "$stack" | tr -d '[:space:]"'"'"'')"
+      [ -n "$stack" ] || continue
+      names+=("$name")
+      stacks+=("$stack")
+    done
+  done <<< "$adapters"
+
+  [ "${#stacks[@]}" -ge 2 ] || return 0
+
+  local i j
+  for ((i = 0; i < ${#stacks[@]}; i++)); do
+    for ((j = i + 1; j < ${#stacks[@]}; j++)); do
+      if [ "${stacks[$i]}" = "${stacks[$j]}" ] && [ "${names[$i]}" != "${names[$j]}" ]; then
+        printf '⚠ Adapters "%s" and "%s" both declare stack "%s" — both load together for matching projects; check standards/floor.md in each for conflicting conventions.\n' \
+          "${names[$i]}" "${names[$j]}" "${stacks[$i]}"
+      fi
+    done
+  done
+}
+
 config_get_agents() {
-  # prints one agent id per line; reads "agents:" list, falls back to "agent:" scalar
+  # prints one agent id per line; reads "agents:" list, falls back to "agent:"
+  # scalar. No agent configured is a normal, successful outcome per this
+  # function's own contract (same reasoning as config_get's `return 0`) —
+  # without it, `[ -n "$a" ] && printf ...` leaves the function's exit status
+  # as that test's false (1) when $a is empty, which kills a bare-assignment
+  # caller (e.g. cmd_doctor's `configured_agents="$(config_get_agents)"`)
+  # under `set -e`, right when it's trying to report "no agents configured".
   [ -f "$CONFIG" ] || return 0
   if grep -qE "^agents:" "$CONFIG" 2>/dev/null; then
     awk '/^agents:/{found=1; next} /^[a-zA-Z]/{found=0} found && /^[[:space:]]*-/{gsub(/^[[:space:]]*-[[:space:]]*/,""); print}' "$CONFIG"
@@ -121,6 +175,7 @@ config_get_agents() {
     a="$(config_get agent)"
     [ -n "$a" ] && printf '%s\n' "$a"
   fi
+  return 0
 }
 
 config_set_agents() {
@@ -1305,6 +1360,12 @@ cmd_doctor() {
     [ -d "$dir" ] || { err "adapter '$adapter' listed in config but missing at $dir"; problems=$((problems+1)); }
     [ -f "$dir/ADAPTER.md" ] || { err "adapter '$adapter' missing ADAPTER.md"; problems=$((problems+1)); }
   done < <(config_adapters)
+
+  local overlap_warning
+  while IFS= read -r overlap_warning; do
+    [ -n "$overlap_warning" ] || continue
+    log "$overlap_warning"
+  done < <(check_adapter_stack_overlaps)
 
   if [ "$problems" -eq 0 ]; then
     log "Everything looks good."

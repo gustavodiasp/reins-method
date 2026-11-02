@@ -9,6 +9,18 @@ case "$REINS_HOME" in
   "$HOME"/*|"$HOME") ;;
   *) printf 'Error: REINS_HOME must be under $HOME (got: %s)\n' "$REINS_HOME" >&2; exit 1 ;;
 esac
+case "$REINS_HOME" in
+  # The prefix check above only bounds where REINS_HOME starts — it still
+  # lets through a value containing '"', '$', '`', '\', or a newline, which
+  # cmd_install's PATH-export fallback later writes verbatim into the
+  # user's shell rc file (`export PATH="$REINS_HOME/bin:$PATH"`). Reject
+  # anything outside a plain path's safe character set so that write can
+  # never break out of its quoted string.
+  *[!A-Za-z0-9_./-]*)
+    printf 'Error: REINS_HOME contains unsupported characters (got: %s)\n' "$REINS_HOME" >&2
+    exit 1
+    ;;
+esac
 CORE_DIR="$REINS_HOME/core"
 USER_DIR="$REINS_HOME/user"
 AGENTS_DIR="$REINS_HOME/agents"
@@ -133,8 +145,19 @@ check_adapter_stack_overlaps() {
     [ -n "$name" ] || continue
     local adapter_md="$USER_DIR/adapters/$name/ADAPTER.md"
     [ -f "$adapter_md" ] || continue
+    local stacks_line
+    stacks_line="$(grep -E '^stacks:' "$adapter_md" 2>/dev/null | head -n1)" || true
+    # Only the inline-flow form (`stacks: [a, b]`) is supported — require
+    # literal brackets before extracting, so a block-style YAML list
+    # (`stacks:\n  - a\n  - b`, which sed's bracket-only pattern below
+    # leaves unchanged) is skipped rather than treated as a stack named
+    # "stacks:" verbatim.
+    case "$stacks_line" in
+      *\[*\]*) ;;
+      *) continue ;;
+    esac
     local inside stack
-    inside="$(grep -E '^stacks:' "$adapter_md" | head -n1 | sed -E 's/^stacks:[[:space:]]*\[([^]]*)\].*/\1/')"
+    inside="$(printf '%s' "$stacks_line" | sed -E 's/^stacks:[[:space:]]*\[([^]]*)\].*/\1/')"
     [ -n "$inside" ] || continue
     local stack_list
     IFS=',' read -ra stack_list <<< "$inside"
@@ -1041,6 +1064,9 @@ cmd_new_adapter() {
   print_banner
   local name="${1:-}"
   [ -n "$name" ] || die "usage: reins new-adapter <name>"
+  case "$name" in
+    *[!A-Za-z0-9_-]*) die "invalid name '$name': use only letters, numbers, '_', '-'" ;;
+  esac
   local dir="$USER_DIR/adapters/$name"
   [ -e "$dir" ] && die "$dir already exists"
   mkdir -p "$dir"/{standards,workflow,skills}
@@ -1082,6 +1108,9 @@ cmd_new_skill() {
   print_banner
   local name="${1:-}"
   [ -n "$name" ] || die "usage: reins new-skill <name>"
+  case "$name" in
+    *[!A-Za-z0-9_-]*) die "invalid name '$name': use only letters, numbers, '_', '-'" ;;
+  esac
   local dir="$USER_DIR/skills/$name"
   [ -e "$dir" ] && die "$dir already exists"
   mkdir -p "$dir"
@@ -1286,7 +1315,7 @@ cmd_status() {
   _status_ver="$(config_get installed_version 2>/dev/null)"
   if [ -z "$_status_ver" ] && [ -f "$REINS_HOME/package.json" ]; then
     _status_ver="$(grep -m1 '"version"' "$REINS_HOME/package.json" \
-      | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')"
+      | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')" || true
   fi
   [ -n "$_status_ver" ] && log "Version:  $_status_ver"
   _status_src="$(config_get reins_source 2>/dev/null)"

@@ -82,9 +82,15 @@ print_banner() {
 }
 
 config_get() {
-  # config_get <key> -> prints scalar value for "key: value" line, empty if absent
+  # config_get <key> -> prints scalar value for "key: value" line, empty if absent.
+  # Absence is a normal, successful outcome per this function's own contract —
+  # always return 0 regardless of whether grep matched, so callers that do a
+  # bare assignment (e.g. `reins_source="$(config_get reins_source)"`, as
+  # cmd_update does for a legacy config predating this key) don't get killed
+  # by `set -o pipefail` leaking grep's no-match exit status through.
   [ -f "$CONFIG" ] || return 0
   grep -E "^${1}:" "$CONFIG" 2>/dev/null | head -n1 | sed -E "s/^${1}:[[:space:]]*//"
+  return 0
 }
 
 config_set() {

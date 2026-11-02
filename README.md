@@ -236,6 +236,35 @@ publish them. See [ADAPTERS.md](ADAPTERS.md).
 
 ---
 
+## What REINS doesn't do
+
+REINS is a convention layer your coding agent reads — not a runtime, and not
+an enforcement mechanism. Worth knowing before relying on it for more than
+standards and workflow structure:
+
+- **No guarantee an agent follows the rules.** Every bridge file is Markdown
+  the agent reads at its own discretion. `reins-code-review` and the
+  standards precedence system make non-compliance visible to a human
+  reviewer — they don't prevent it computationally. Earlier attempts at
+  stronger enforcement (MCP tool-gating, a Claude Code mod hook) were tried
+  and dropped: both were bypassable or incomplete.
+- **No automatic conflict resolution between adapters.** If two installed
+  adapters both match a project's detected stacks and their `floor.md` files
+  genuinely disagree, both still load. `reins doctor` warns when two
+  configured adapters declare overlapping `stacks:`, but it can't judge
+  whether their prose actually conflicts — that's still a human call.
+- **No coordination between concurrent agent sessions editing the same
+  code.** The one exception is the shared task-context file, lock-protected
+  for parallel sessions on the same task (see `1_orchestrator.md` §4).
+  Simultaneous code edits from two agents are still ordinary git/merge
+  discipline, same as without REINS.
+
+None of this is unique to REINS — any Markdown-instruction layer (`CLAUDE.md`,
+Copilot instructions, Cursor rules) has the same boundary. It's listed here
+instead of left implicit.
+
+---
+
 ## Skills — on-demand procedures
 
 Skills are `SKILL.md` files the agent loads only when invoked — never
